@@ -1,6 +1,7 @@
-const UserModel = require("../models/userModel");
+const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const aws = require("aws-sdk");
+const jwt = require("jsonwebtoken");
 
 // validation for Profile image
 function isValidImage(value) {
@@ -8,6 +9,7 @@ function isValidImage(value) {
   const result = regEx.test(value);
   return result;
 }
+
 aws.config.update({
   accessKeyId: "AKIAY3L35MCRVFM24Q7U",
   secretAccessKey: "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",
@@ -68,10 +70,10 @@ const registerUser = async function (req, res) {
 
     data.password = await bcrypt.hash(password, saltRounds);
 
-    const user = await UserModel.create(data);
+    const user = await userModel.create(data);
     return res
       .status(201)
-      .send({ status: true, message: "Success", data: user });
+      .send({ status: true, message: "User created successfully", data: user });
   } catch (error) {
     return res.status(500).send({
       status: false,
@@ -80,6 +82,43 @@ const registerUser = async function (req, res) {
   }
 };
 
+// .................................. Login User .............................//
+const loginUser = async function (req, res) {
+  try {
+    let email = req.body.email;
+    let password = req.body.password;
+
+    let user = await userModel.findOne({ email });
+    let validPassword = await bcrypt.compare(password, user.password);
+
+    if (validPassword) {
+      const token = jwt.sign(
+        {
+          userId: user._id.toString(),
+        },
+        "project5Group56",
+        { expiresIn: "3h" }
+      );
+      res.status(200).send({
+        status: true,
+        message: "User login successfull",
+        data: { userId: user._id, token: token },
+      });
+    } else {
+      return res.status(400).send({
+        status: false,
+        message: "Invalid Credentials",
+      });
+    }
+  } catch (error) {
+    return res.status(500).send({
+      status: false,
+      message: error,
+    });
+  }
+};
+
 module.exports = {
   registerUser,
+  loginUser,
 };
