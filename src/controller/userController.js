@@ -5,19 +5,19 @@ const saltRounds = 10;
 
 let password = "password123"
 
-bcrypt.genSalt(saltRounds, function(err, salt) {
-  bcrypt.hash(password, salt, function(err, hash) {
-  // returns hash
-  console.log(hash);
-  });
-});
-  
+
+
 
 
 const registerUser = async function (req, res) {
 
     try {
+        
 
+        const hash= await bcrypt.hash(password, saltRounds)
+        // returns hash
+        console.log(hash)
+      
 
 
     } catch (err) {
