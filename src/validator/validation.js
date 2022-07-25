@@ -36,13 +36,19 @@ const isValidPassword = function (password) {
   return re.test(password);
 };
 
-// Validation for Strings contain numbers
-const stringContainNumber = function (value) {
-  if (!/^[ a-z ]+$/i.test(value)) return false;
+// // Validation for Strings contain numbers
+// const stringContainNumber = function (value) {
+//   if (!/^[ a-z ]+$/i.test(value)) return false;
+//   else return true;
+// };
+
+// Validation for length of characters
+const lengthOfCharacter = function (value) {
+  if (!/^\s*(?=[a-zA-Z])[\a-z\A-Z\s]{3,64}\s*$/.test(value)) return false;
   else return true;
 };
 
-// Validation for User
+// ....................................... Validation for User .................................//
 const validationForUser = async function (req, res, next) {
   try {
     let data = req.body;
@@ -60,7 +66,7 @@ const validationForUser = async function (req, res, next) {
         message: "Please provide first name , eg.Ankita",
       });
     }
-    if (!stringContainNumber(fname)) {
+    if (!lengthOfCharacter(fname)) {
       return res.status(400).send({
         status: false,
         message: "Please provide first name with right format",
@@ -73,7 +79,7 @@ const validationForUser = async function (req, res, next) {
         message: "Please provide last name , eg.Sangani",
       });
     }
-    if (!stringContainNumber(lname)) {
+    if (!lengthOfCharacter(lname)) {
       return res.status(400).send({
         status: false,
         message: "Please provide last name with right format",
@@ -105,7 +111,7 @@ const validationForUser = async function (req, res, next) {
     if (!isValidMobileNumber(phone)) {
       return res.status(400).send({
         status: false,
-        message: "Please enter 10 digit indian number",
+        message: "Please enter 10 digit indian number, eg. +91 9876xxxxxx",
       });
     }
     const existPhone = await userModel.findOne({ phone });
@@ -134,10 +140,10 @@ const validationForUser = async function (req, res, next) {
         message: "Please enter city in shipping address",
       });
     }
-    if (isNaN(address.shipping.pincode)) {
+    if (!lengthOfCharacter(address.shipping.city)) {
       return res.status(400).send({
         status: false,
-        message: "Please enter pincode in shipping address",
+        message: "Please enter valid city",
       });
     }
     if (!/^\d{6}$/.test(address.shipping.pincode)) {
@@ -158,10 +164,10 @@ const validationForUser = async function (req, res, next) {
         message: "Please enter city in billing address",
       });
     }
-    if (isNaN(address.billing.pincode)) {
+    if (!lengthOfCharacter(address.shipping.city)) {
       return res.status(400).send({
         status: false,
-        message: "Please enter pincode in billing address",
+        message: "Please enter valid city",
       });
     }
     if (!/^\d{6}$/.test(address.billing.pincode)) {
@@ -178,4 +184,47 @@ const validationForUser = async function (req, res, next) {
   }
   next();
 };
-module.exports = { validationForUser };
+
+// ....................................... Validation for Login User .................................//
+const validationForLoginUser = async function (req, res, next) {
+  try {
+    let data = req.body;
+
+    if (!checkBodyParams(data)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please input Parameters" });
+    }
+    if (!data.email) {
+      return res.status(400).send({
+        status: false,
+        message: "Email is mandatory",
+      });
+    }
+    if (!isValidEmail(data.email)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Email is not valid" });
+    }
+    if (!data.password) {
+      return res.status(400).send({
+        status: false,
+        message: "Password is mandatory",
+      });
+    }
+    if (!isValidPassword(data.password)) {
+      return res.status(400).send({
+        status: false,
+        message:
+          "Please enter valid password with one uppercase ,lowercse and special character and length should be 8 to 15",
+      });
+    }
+  } catch (error) {
+    return res.status(500).send({
+      status: false,
+      message: error.message,
+    });
+  }
+  next();
+};
+module.exports = { validationForUser, validationForLoginUser };
