@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controller/userController");
 const validation = require("../validator/validation");
+const auth = require("../middleware/auth");
 
 // test
 router.get("/test", function (req, res) {
@@ -14,7 +15,13 @@ router.post(
   userController.registerUser
 );
 
-router.post("/login", validation.validationForLoginUser ,   userController.loginUser);
+router.post(
+  "/login",
+  validation.validationForLoginUser,
+  userController.loginUser
+);
+
+router.get("/user/:userId/profile", auth.Authentication, userController.getUser);
 
 router.all("/**", function (req, res) {
   res.status(404).send({

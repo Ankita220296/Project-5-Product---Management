@@ -2,6 +2,8 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const aws = require("aws-sdk");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 // validation for Profile image
 function isValidImage(value) {
@@ -118,7 +120,35 @@ const loginUser = async function (req, res) {
   }
 };
 
+// .................................. Get User .............................//
+const getUser = async function (req, res) {
+  try {
+    console.log(req.headers);
+    let userId = req.params.userId;
+    if (!ObjectId.isValid(userId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "UserId is not valid" });
+    }
+
+    const user = await userModel.findById(userId);
+
+    // authorization
+    if (req.headers.userId !== user._id.toString())
+      return res
+        .status(403)
+        .send({ status: false, msg: "You are not authorized...." });
+
+    return res
+      .status(500)
+      .send({ status: true, message: "User profile details", data: user });
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
+  getUser,
 };
