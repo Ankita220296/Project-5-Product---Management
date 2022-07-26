@@ -8,12 +8,7 @@ router.get("/test", function (req, res) {
   res.send("My first api for checking the terminal");
 });
 
-router.post(
-  "/register",
-  validation.validationForUser,
-  userController.registerUser
-);
-
+router.post("/register", validation.validationForUser,userController.registerUser);
 router.post("/login", validation.validationForLoginUser ,  userController.loginUser);
 
 router.all("/**", function (req, res) {

@@ -53,7 +53,7 @@ const registerUser = async function (req, res) {
         .status(400)
         .send({ status: false, message: "Please upload only one image" });
     }
-
+    
     if (!isValidImage(files[0].originalname)) {
       return res.status(400).send({
         status: false,
@@ -81,6 +81,8 @@ const registerUser = async function (req, res) {
     });
   }
 };
+
+
 
 // .................................. Login User .............................//
 const loginUser = async function (req, res) {
