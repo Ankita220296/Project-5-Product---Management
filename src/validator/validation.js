@@ -9,8 +9,8 @@ const checkBodyParams = function (value) {
 const isValidBody = function (value) {
   if (typeof value === "undefined" || value === "null") return false;
   if (typeof value === "string" && value.trim().length === 0) return false;
-  if (typeof value === "number" && value.toString().trim().length === 0)
-    return false;
+  // if (typeof value === "number" && value.toString().trim().length === 0)
+  //   return false;
   return true;
 };
 
@@ -121,6 +121,13 @@ const validationForUser = async function (req, res, next) {
           "Please enter valid password with one uppercase ,lowercse and special character and length should be 8 to 15",
       });
     }
+    if (!address.shipping) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter shipping address",
+      });
+    }
+
     if (!isValidBody(address.shipping.street)) {
       return res.status(400).send({
         status: false,
@@ -143,6 +150,13 @@ const validationForUser = async function (req, res, next) {
       return res.status(400).send({
         status: false,
         message: "Please enter valid pincode",
+      });
+    }
+
+    if (!address.billing) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter billing address",
       });
     }
     if (!isValidBody(address.billing.street)) {
@@ -224,6 +238,16 @@ const validationForLoginUser = async function (req, res, next) {
 // ....................................... Validation for Updated User .................................//
 const validationForUpdateUser = async function (req, res, next) {
   try {
+    let userId = req.params.userId
+    const user = await userModel.findById(userId);
+
+    // authorization
+    if (req.headers.userId !== user._id.toString()) {
+      return res
+        .status(403)
+        .send({ status: false, msg: "You are not authorized...." });
+    }
+
     let data = req.body;
     const { fname, lname, email, phone, password, address } = data;
 
@@ -247,89 +271,111 @@ const validationForUpdateUser = async function (req, res, next) {
       }
     }
 
-    if (lname && !isValidBody(lname)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please provide last name,eg.Sangani",
-      });
-    }
-    if (lname && !lengthOfCharacter(lname)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please provide last name with right format",
-      });
-    }
-
-    if (email && !isValidBody(email)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please enter email" });
-    } else if (email && !isValidEmail(email)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Email is not valid" });
+    if (lname) {
+      if (!isValidBody(lname)) {
+        return res.status(400).send({
+          status: false,
+          message: "Please provide last name,eg.Sangani",
+        });
+      }
+      if (!lengthOfCharacter(lname)) {
+        return res.status(400).send({
+          status: false,
+          message: "Please provide last name with right format",
+        });
+      }
     }
 
-    if (phone && !isValidMobileNumber(phone)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter 10 digit indian number, eg. +91 9876xxxxxx",
-      });
+    if (email)
+      if (!isValidBody(email)) {
+        return res
+          .status(400)
+          .send({ status: false, message: "Please enter email" });
+      } else if (!isValidEmail(email)) {
+        return res
+          .status(400)
+          .send({ status: false, message: "Email is not valid" });
+      }
+
+    if (phone) {
+      if (!isValidMobileNumber(phone)) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter 10 digit indian number, eg. +91 9876xxxxxx",
+        });
+      }
     }
-    if (password && !isValidPassword(password)) {
-      return res.status(400).send({
-        status: false,
-        message:
-          "Please enter valid password with one uppercase ,lowercse and special character and length should be 8 to 15",
-      });
+
+    if (password) {
+      if (!isValidPassword(password)) {
+        return res.status(400).send({
+          status: false,
+          message:
+            "Please enter valid password with one uppercase ,lowercse and special character and length should be 8 to 15",
+        });
+      }
     }
-    if (address.shipping.street && !isValidBody(address.shipping.street)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter street in shipping address",
-      });
+
+    if (address && address.shipping) {
+      if (
+        address.shipping.street != undefined &&
+        !isValidBody(address.shipping.street)
+      ) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter street in shipping address",
+        });
+      }
+      if (
+        address.shipping.city != undefined &&
+        !lengthOfCharacter(address.shipping.city)
+      ) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter city in shipping address with right format",
+        });
+      }
+
+      if (
+        address.shipping.pincode != undefined &&
+        !/^\d{6}$/.test(address.shipping.pincode)
+      ) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter pincode in shipping address with right format",
+        });
+      }
     }
-    if (address.shipping.city && !isValidBody(address.shipping.city)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter city in shipping address",
-      });
-    }
-    if (address.shipping.city && !lengthOfCharacter(address.shipping.city)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter valid city",
-      });
-    }
-    if (address.shipping.pincode && !/^\d{6}$/.test(address.shipping.pincode)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter valid pincode",
-      });
-    }
-    if (address.shipping.street && !isValidBody(address.billing.street)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter street in billing address",
-      });
-    }
-    if (address.shipping.city && !isValidBody(address.billing.city)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter city in billing address",
-      });
-    }
-    if (address.shipping.city && !lengthOfCharacter(address.billing.city)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter valid city",
-      });
-    }
-    if (address.shipping.pincode && !/^\d{6}$/.test(address.billing.pincode)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter valid pincode",
-      });
+
+    if (address && address.billing) {
+      if (
+        address.billing.street != undefined &&
+        !isValidBody(address.billing.street)
+      ) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter street in billing address",
+        });
+      }
+      if (
+        address.billing.city != undefined &&
+        !lengthOfCharacter(address.billing.city)
+      ) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter city in billing address with right format",
+        });
+      }
+
+      if (
+        address.billing.pincode != undefined &&
+        !/^\d{6}$/.test(address.billing.pincode)
+      ) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter pincode in billing address with right format",
+        });
+      }
     }
   } catch (error) {
     return res.status(500).send({

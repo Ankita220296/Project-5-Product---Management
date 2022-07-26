@@ -174,8 +174,10 @@ const updateUser = async function (req, res) {
       obj.email = email;
     }
 
+    // ... validation for Profile Image ... //
     let profileImage = req.files;
-    if (profileImage) {
+
+    if (profileImage && profileImage.length > 0) {
       if (profileImage.length > 1) {
         return res
           .status(400)
@@ -192,7 +194,7 @@ const updateUser = async function (req, res) {
       obj.profileImage = uploadedFileURL;
     }
 
-    // ..........................validation for password .......................... //
+    // ... validation for password ... //
     const saltRounds = 10;
     if (password) obj.password = await bcrypt.hash(password, saltRounds);
 
@@ -207,26 +209,29 @@ const updateUser = async function (req, res) {
       obj.phone = phone;
     }
 
-    if (address.shipping) {
-      if (address.shipping.street) {
-        obj["address.shipping.street"] = address.shipping.street;
+    // ... validation for Address ... //
+    if (address) {
+      if (address.shipping) {
+        if (address.shipping.street) {
+          obj["address.shipping.street"] = address.shipping.street;
+        }
+        if (address.shipping.city) {
+          obj["address.shipping.city"] = address.shipping.city;
+        }
+        if (address.shipping.pincode) {
+          obj["address.shipping.pincode"] = address.shipping.pincode;
+        }
       }
-      if (address.shipping.city) {
-        obj["address.shipping.city"] = address.shipping.city;
-      }
-      if (address.shipping.pincode) {
-        obj["address.shipping.pincode"] = address.shipping.pincode;
-      }
-    }
-    if (address.billing) {
-      if (address.billing.street) {
-        obj["address.billing.street"] = address.billing.street;
-      }
-      if (address.billing.city) {
-        obj["address.billing.city"] = address.billing.city;
-      }
-      if (address.billing.pincode) {
-        obj["address.billing.pincode"] = address.billing.pincode;
+      if (address.billing) {
+        if (address.billing.street) {
+          obj["address.billing.street"] = address.billing.street;
+        }
+        if (address.billing.city) {
+          obj["address.billing.city"] = address.billing.city;
+        }
+        if (address.billing.pincode) {
+          obj["address.billing.pincode"] = address.billing.pincode;
+        }
       }
     }
 
@@ -235,6 +240,11 @@ const updateUser = async function (req, res) {
       obj,
       { new: true }
     );
+
+    if (!updateUserDetails) {
+      return res.status(403).send({ status: false, msg: "User not found" });
+    }
+
     return res.status(200).send({
       status: true,
       message: "User profile updated",
