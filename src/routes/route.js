@@ -21,7 +21,17 @@ router.post(
   userController.loginUser
 );
 
-router.get("/user/:userId/profile", auth.Authentication, userController.getUser);
+router.get(
+  "/user/:userId/profile",
+  auth.Authentication,
+  userController.getUser
+);
+
+router.put(
+  "/user/:userId/profile",
+  auth.Authentication,
+  userController.updateUser
+);
 
 router.all("/**", function (req, res) {
   res.status(404).send({

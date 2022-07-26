@@ -3,12 +3,12 @@ const jwt = require("jsonwebtoken");
 const Authentication = function (req, res, next) {
   try {
     let token = req.headers.authorization;
-    token = token.split(" ")[1];
-
     if (!token)
       return res
         .status(400)
         .send({ status: false, msg: "Token must be present" });
+
+    token = token.split(" ")[1];
 
     jwt.verify(token, "project5Group56", (error, response) => {
       if (error) {

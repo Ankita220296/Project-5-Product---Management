@@ -46,6 +46,7 @@ const registerUser = async function (req, res) {
     let password = data.password;
 
     let files = req.files;
+
     if (files.length == 0) {
       return res
         .status(400)
@@ -63,12 +64,9 @@ const registerUser = async function (req, res) {
           "Please upload only image file with extension jpg, png, gif, jpeg",
       });
     }
-    if (files && files.length > 0) {
-      let uploadedFileURL = await uploadFile(files[0]);
-      data.profileImage = uploadedFileURL;
-    } else {
-      return res.status(400).send({ msg: "No file found" });
-    }
+
+    let uploadedFileURL = await uploadFile(files[0]);
+    data.profileImage = uploadedFileURL;
 
     data.password = await bcrypt.hash(password, saltRounds);
 
@@ -84,7 +82,7 @@ const registerUser = async function (req, res) {
   }
 };
 
-// .................................. Login User .............................//
+// .................................. Login User .................................//
 const loginUser = async function (req, res) {
   try {
     let email = req.body.email;
@@ -132,6 +130,9 @@ const getUser = async function (req, res) {
     }
 
     const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(400).send({ status: true, message: "User not found" });
+    }
 
     // authorization
     if (req.headers.userId !== user._id.toString())
@@ -147,8 +148,110 @@ const getUser = async function (req, res) {
   }
 };
 
+// .................................. Update User .............................//
+const updateUser = async function (req, res) {
+  try {
+    let userId = req.params.userId;
+    let data = req.body;
+    if (!ObjectId.isValid(userId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "UserId is not valid" });
+    }
+
+    const { fname, lname, email, profileImage, phone, address, password } =
+      data;
+
+    console.log("User address", address);
+
+    let obj = {};
+
+    if (fname) obj.fname = fname;
+    if (lname) obj.lname = lname;
+    if (email) {
+      const existEmail = await userModel.findOne({ email });
+      if (existEmail) {
+        return res
+          .status(400)
+          .send({ status: false, message: "This email id is already in use" });
+      }
+      obj.email = email;
+    }
+
+    if (profileImage) {
+      let files = req.files;
+      if (files.length > 1) {
+        return res
+          .status(400)
+          .send({ status: false, message: "Please upload only one image" });
+      }
+      if (!isValidImage(files[0].originalname)) {
+        console.log(files[0].originalname);
+        return res.status(400).send({
+          status: false,
+          message:
+            "Please upload only image file with extension jpg, png, gif, jpeg",
+        });
+      }
+      let uploadedFileURL = await uploadFile(files[0]);
+      obj.profileImage = uploadedFileURL;
+    }
+
+    // ..........................validation for password .......................... //
+    const saltRounds = 10;
+    if (password) obj.password = await bcrypt.hash(password, saltRounds);
+
+    if (phone) {
+      const existPhone = await userModel.findOne({ phone });
+      if (existPhone) {
+        return res.status(400).send({
+          status: false,
+          message: "This phone number is already in use",
+        });
+      }
+      obj.phone = phone;
+    }
+
+
+    if (address.shipping) {
+      if (address.shipping.street) {
+        // obj.address = { shipping: { street: address.shipping.street } };
+      }
+
+      if (address.shipping.city)
+        obj.address.shipping.city = address.shipping.city;
+
+      if (address.shipping.pincode)
+        obj.address.shipping.pincode = address.shipping.pincode;
+    }
+
+    if (address.billing.street)
+      obj.address.billing.street = address.billing.street;
+
+    if (address.billing.city) obj.address.billing.city = address.billing.city;
+
+    if (address.billing.pincode)
+      obj.address.billing.pincode = address.billing.pincode;
+
+    const updateUserDetails = await userModel.findOneAndUpdate(
+      { _id: userId },
+      { $set: { obj } },
+      { new: true }
+    );
+    console.log(updateUserDetails);
+    return res.status(200).send({
+      status: true,
+      message: "User profile updated",
+      data: updateUserDetails,
+    });
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUser,
+  updateUser,
 };
