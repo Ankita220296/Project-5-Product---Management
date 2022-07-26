@@ -5,14 +5,17 @@ const checkBodyParams = function (value) {
   if (Object.keys(value).length === 0) return false;
   else return true;
 };
+const isvalidRequestBody = function (value) {
+  return Object.keys(value).length > 0
+} 
 
 const isValidBody = function (value) {
   if (typeof value === "undefined" || value === "null") return false;
   if (typeof value === "string" && value.trim().length === 0) return false;
-  if (typeof value === "number" && value.toString().trim().length === 0)
-    return false;
+  if (typeof value === "Number" && value.toString().trim().length === 0)return false;
   return true;
 };
+
 
 const isValidEmail = function (email) {
   let checkemail = /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/;
@@ -230,7 +233,7 @@ const validationForUpdateUser = async function (req, res, next) {
     if (!checkBodyParams(data)) {
       return res
         .status(400)
-        .send({ status: false, message: "Please input Parameters" });
+        .send({ status: false, message: "Please input Parameters which you want to update" });
     }
     if (fname) {
       if (!isValidBody(fname)) {
@@ -283,53 +286,62 @@ const validationForUpdateUser = async function (req, res, next) {
           "Please enter valid password with one uppercase ,lowercse and special character and length should be 8 to 15",
       });
     }
-    if (address.shipping.street && !isValidBody(address.shipping.street)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter street in shipping address",
-      });
-    }
-    if (address.shipping.city && !isValidBody(address.shipping.city)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter city in shipping address",
-      });
-    }
-    if (address.shipping.city && !lengthOfCharacter(address.shipping.city)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter valid city",
-      });
-    }
-    if (address.shipping.pincode && !/^\d{6}$/.test(address.shipping.pincode)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter valid pincode",
-      });
-    }
-    if (address.shipping.street && !isValidBody(address.billing.street)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter street in billing address",
-      });
-    }
-    if (address.shipping.city && !isValidBody(address.billing.city)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter city in billing address",
-      });
-    }
-    if (address.shipping.city && !lengthOfCharacter(address.billing.city)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter valid city",
-      });
-    }
-    if (address.shipping.pincode && !/^\d{6}$/.test(address.billing.pincode)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter valid pincode",
-      });
+    if (address) {
+      if (address.shipping) {
+        if (address.shipping.street){
+          if(!isValidBody(address.shipping.street)) {
+            console.log(address.shipping.street)
+            return res.status(400).send({
+              status: false,
+              message: "Please enter street in shipping address",
+            });
+        }
+        }
+        if (address.shipping.city && !isValidBody(address.shipping.city)) {
+          return res.status(400).send({
+            status: false,
+            message: "Please enter city in shipping address",
+          });
+        }
+        if (address.shipping.city && !lengthOfCharacter(address.shipping.city)) {
+          return res.status(400).send({
+            status: false,
+            message: "Please enter valid city",
+          });
+        }
+        if (address.shipping.pincode && !/^\d{6}$/.test(address.shipping.pincode)) {
+          return res.status(400).send({
+            status: false,
+            message: "Please enter valid pincode",
+          });
+        }
+      }
+      if (address.billing) {
+        if (address.billing.street && !isValidBody(address.billing.street)) {
+          return res.status(400).send({
+            status: false,
+            message: "Please enter street in billing address",
+          });
+        }
+        if (address.billing.city && !isValidBody(address.billing.city)) {
+          return res.status(400).send({
+            status: false,
+            message: "Please enter city in billing address",
+          });
+        }
+        if (address.billing.city && !lengthOfCharacter(address.billing.city)) {
+          return res.status(400).send({
+            status: false,
+            message: "Please enter valid city",
+          });
+        }
+        if (address.billing.pincode && !/^\d{6}$/.test(address.billing.pincode)) {
+          return res.status(400).send({
+            status: false,
+            message: "Please enter valid pincode",
+          });
+        }
+      }
     }
   } catch (error) {
     return res.status(500).send({
@@ -343,4 +355,5 @@ module.exports = {
   validationForUser,
   validationForLoginUser,
   validationForUpdateUser,
+  isValidBody
 };

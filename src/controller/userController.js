@@ -4,6 +4,7 @@ const aws = require("aws-sdk");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
+const valid=require('../validator/validation')
 
 // validation for Profile image
 function isValidImage(value) {
@@ -152,6 +153,7 @@ const getUser = async function (req, res) {
 const updateUser = async function (req, res) {
   try {
     let userId = req.params.userId;
+    let profileImage = req.body.files;
     let data = req.body;
     if (!ObjectId.isValid(userId)) {
       return res
@@ -174,7 +176,6 @@ const updateUser = async function (req, res) {
       obj.email = email;
     }
 
-    let profileImage = req.files;
     if (profileImage) {
       if (profileImage.length > 1) {
         return res
@@ -206,11 +207,12 @@ const updateUser = async function (req, res) {
       }
       obj.phone = phone;
     }
-
+    if(address){
     if (address.shipping) {
-      if (address.shipping.street) {
-        obj["address.shipping.street"] = address.shipping.street;
+      if (!valid.isValidBody(address.shipping.street)) {
+        return res.send({msg:'Please enter valid street name'})
       }
+      obj["address.shipping.street"] = address.shipping.street;
       if (address.shipping.city) {
         obj["address.shipping.city"] = address.shipping.city;
       }
@@ -218,6 +220,7 @@ const updateUser = async function (req, res) {
         obj["address.shipping.pincode"] = address.shipping.pincode;
       }
     }
+  
     if (address.billing) {
       if (address.billing.street) {
         obj["address.billing.street"] = address.billing.street;
@@ -229,16 +232,13 @@ const updateUser = async function (req, res) {
         obj["address.billing.pincode"] = address.billing.pincode;
       }
     }
-
-    const updateUserDetails = await userModel.findOneAndUpdate(
-      { _id: userId },
-      obj,
-      { new: true }
-    );
-    return res.status(200).send({
+  }
+    const updateUserDetails = await userModel.findOneAndUpdate({ _id: userId },obj,{ new: true });
+ 
+    return res.status(201).send({
       status: true,
       message: "User profile updated",
-      data: updateUserDetails,
+      data: updateUserDetails
     });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
