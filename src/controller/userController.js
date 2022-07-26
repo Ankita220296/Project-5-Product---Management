@@ -159,10 +159,7 @@ const updateUser = async function (req, res) {
         .send({ status: false, message: "UserId is not valid" });
     }
 
-    const { fname, lname, email, profileImage, phone, address, password } =
-      data;
-
-
+    const { fname, lname, email, phone, address, password } = data;
     let obj = {};
 
     if (fname) obj.fname = fname;
@@ -177,22 +174,21 @@ const updateUser = async function (req, res) {
       obj.email = email;
     }
 
+    let profileImage = req.files;
     if (profileImage) {
-      let files = req.files;
-      if (files.length > 1) {
+      if (profileImage.length > 1) {
         return res
           .status(400)
           .send({ status: false, message: "Please upload only one image" });
       }
-      if (!isValidImage(files[0].originalname)) {
-        console.log(files[0].originalname);
+      if (!isValidImage(profileImage[0].originalname)) {
         return res.status(400).send({
           status: false,
           message:
             "Please upload only image file with extension jpg, png, gif, jpeg",
         });
       }
-      let uploadedFileURL = await uploadFile(files[0]);
+      let uploadedFileURL = await uploadFile(profileImage[0]);
       obj.profileImage = uploadedFileURL;
     }
 
@@ -211,33 +207,34 @@ const updateUser = async function (req, res) {
       obj.phone = phone;
     }
 
-if(address){
-  if(address.shipping){
-    if (address.shipping.street) {
-      console.log("hello")
-        obj["address.shipping.street"] =address.shipping.street
-      
+    if (address.shipping) {
+      if (address.shipping.street) {
+        obj["address.shipping.street"] = address.shipping.street;
+      }
+      if (address.shipping.city) {
+        obj["address.shipping.city"] = address.shipping.city;
+      }
+      if (address.shipping.pincode) {
+        obj["address.shipping.pincode"] = address.shipping.pincode;
       }
     }
-  }
-      if (address.shipping.city)
-        obj["address.shipping.city"] = address.shipping.city;
+    if (address.billing) {
+      if (address.billing.street) {
+        obj["address.billing.street"] = address.billing.street;
+      }
+      if (address.billing.city) {
+        obj["address.billing.city"] = address.billing.city;
+      }
+      if (address.billing.pincode) {
+        obj["address.billing.pincode"] = address.billing.pincode;
+      }
+    }
 
-    //   if (address.shipping.pincode)
-    //     obj.address.shipping.pincode = address.shipping.pincode;
-    // }
-
-    // if (address.billing.street)
-    //   obj.address.billing.street = address.billing.street;
-
-    // if (address.billing.city) obj.address.billing.city = address.billing.city;
-
-    // if (address.billing.pincode)
-    //   obj.address.billing.pincode = address.billing.pincode;
-
-    const updateUserDetails = await userModel.findOneAndUpdate({ _id: userId },obj,{ new: true }
+    const updateUserDetails = await userModel.findOneAndUpdate(
+      { _id: userId },
+      obj,
+      { new: true }
     );
-    console.log(updateUserDetails);
     return res.status(200).send({
       status: true,
       message: "User profile updated",
