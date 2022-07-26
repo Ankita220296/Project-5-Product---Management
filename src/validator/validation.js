@@ -53,7 +53,6 @@ const validationForUser = async function (req, res, next) {
         .status(400)
         .send({ status: false, message: "Please input Parameters" });
     }
-
     if (!isValidBody(fname)) {
       return res.status(400).send({
         status: false,
@@ -221,4 +220,127 @@ const validationForLoginUser = async function (req, res, next) {
   }
   next();
 };
-module.exports = { validationForUser, validationForLoginUser };
+
+// ....................................... Validation for Updated User .................................//
+const validationForUpdateUser = async function (req, res, next) {
+  try {
+    let data = req.body;
+    const { fname, lname, email, phone, password, address } = data;
+
+    if (!checkBodyParams(data)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please input Parameters" });
+    }
+    if (fname) {
+      if (!isValidBody(fname)) {
+        return res.status(400).send({
+          status: false,
+          message: "Please provide first name,eg.Ankita",
+        });
+      }
+      if (!lengthOfCharacter(fname)) {
+        return res.status(400).send({
+          status: false,
+          message: "Please provide first name with right format",
+        });
+      }
+    }
+
+    if (lname && !isValidBody(lname)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please provide last name,eg.Sangani",
+      });
+    }
+    if (lname && !lengthOfCharacter(lname)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please provide last name with right format",
+      });
+    }
+
+    if (email && !isValidBody(email)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please enter email" });
+    } else if (email && !isValidEmail(email)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Email is not valid" });
+    }
+
+    if (phone && !isValidMobileNumber(phone)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter 10 digit indian number, eg. +91 9876xxxxxx",
+      });
+    }
+    if (password && !isValidPassword(password)) {
+      return res.status(400).send({
+        status: false,
+        message:
+          "Please enter valid password with one uppercase ,lowercse and special character and length should be 8 to 15",
+      });
+    }
+    if (address.shipping.street && !isValidBody(address.shipping.street)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter street in shipping address",
+      });
+    }
+    if (address.shipping.city && !isValidBody(address.shipping.city)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter city in shipping address",
+      });
+    }
+    if (address.shipping.city && !lengthOfCharacter(address.shipping.city)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter valid city",
+      });
+    }
+    if (address.shipping.pincode && !/^\d{6}$/.test(address.shipping.pincode)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter valid pincode",
+      });
+    }
+    if (address.shipping.street && !isValidBody(address.billing.street)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter street in billing address",
+      });
+    }
+    if (address.shipping.city && !isValidBody(address.billing.city)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter city in billing address",
+      });
+    }
+    if (address.shipping.city && !lengthOfCharacter(address.billing.city)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter valid city",
+      });
+    }
+    if (address.shipping.pincode && !/^\d{6}$/.test(address.billing.pincode)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter valid pincode",
+      });
+    }
+  } catch (error) {
+    return res.status(500).send({
+      status: false,
+      message: error.message,
+    });
+  }
+  next();
+};
+module.exports = {
+  validationForUser,
+  validationForLoginUser,
+  validationForUpdateUser,
+};

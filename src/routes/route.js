@@ -30,6 +30,7 @@ router.get(
 router.put(
   "/user/:userId/profile",
   auth.Authentication,
+  validation.validationForUpdateUser,
   userController.updateUser
 );
 
