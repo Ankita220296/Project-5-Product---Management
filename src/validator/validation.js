@@ -36,12 +36,6 @@ const isValidPassword = function (password) {
   return re.test(password);
 };
 
-// // Validation for Strings contain numbers
-// const stringContainNumber = function (value) {
-//   if (!/^[ a-z ]+$/i.test(value)) return false;
-//   else return true;
-// };
-
 // Validation for length of characters
 const lengthOfCharacter = function (value) {
   if (!/^\s*(?=[a-zA-Z])[\a-z\A-Z\s]{3,64}\s*$/.test(value)) return false;
@@ -164,7 +158,7 @@ const validationForUser = async function (req, res, next) {
         message: "Please enter city in billing address",
       });
     }
-    if (!lengthOfCharacter(address.shipping.city)) {
+    if (!lengthOfCharacter(address.billing.city)) {
       return res.status(400).send({
         status: false,
         message: "Please enter valid city",
