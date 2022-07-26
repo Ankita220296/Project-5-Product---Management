@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controller/userController");
+const productController = require("../controller/productController");
 const validation = require("../validator/validation");
+const productValidation = require("../validator/productValidator");
 const auth = require("../middleware/auth");
 
 // test
@@ -33,7 +35,17 @@ router.put(
   validation.validationForUpdateUser,
   userController.updateUser
 );
+router.get(
+  "/products/:productId",
+  productController.getProductbyId
+);
 
+
+router.post(
+  "/products",
+  productValidation.validationForProduct,
+  productController.createProduct
+);
 router.all("/**", function (req, res) {
   res.status(404).send({
     status: false,

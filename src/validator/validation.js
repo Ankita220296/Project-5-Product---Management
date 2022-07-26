@@ -329,7 +329,7 @@ const validationForUpdateUser = async function (req, res, next) {
       if (
         address.shipping.city != undefined &&
         !lengthOfCharacter(address.shipping.city)
-      ) {
+      ) {  
         return res.status(400).send({
           status: false,
           message: "Please enter city in shipping address with right format",
