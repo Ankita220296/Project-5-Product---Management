@@ -52,6 +52,8 @@ router.put(
   productController.updateProduct
 );
 
+router.delete("/products/:productId", productController.deleteProduct);
+
 router.all("/**", function (req, res) {
   res.status(404).send({
     status: false,

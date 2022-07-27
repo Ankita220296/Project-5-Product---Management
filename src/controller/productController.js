@@ -173,7 +173,7 @@ const updateProduct = async function (req, res) {
     if (!ObjectId.isValid(productId)) {
       return res
         .status(400)
-        .send({ status: false, message: "UserId is not valid" });
+        .send({ status: false, message: "ProductId is not valid" });
     }
     const {
       title,
@@ -232,7 +232,7 @@ const updateProduct = async function (req, res) {
     );
 
     if (!updateProductDetails) {
-      return res.status(404).send({ status: false, msg: "User not found" }); // status code
+      return res.status(404).send({ status: false, msg: "Product not found" }); // status code
     }
 
     return res.status(200).send({
@@ -245,9 +245,39 @@ const updateProduct = async function (req, res) {
   }
 };
 
+// .................................. Delete Product .............................//
+const deleteProduct = async function (req, res) {
+  try {
+    let productId = req.params.productId;
+    if (!ObjectId.isValid(productId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "ProductId is not valid" });
+    }
+
+    const deleteProductDetails = await productModel.findOneAndUpdate(
+      { _id: productId, isDeleted: false },
+      { isDeleted: true, deletedAt: Date.now() },
+      { new: true }
+    );
+
+    if (!deleteProductDetails) {
+      return res.status(404).send({ status: false, msg: "Product not found" }); // status code
+    }
+
+    return res.status(200).send({
+      status: true,
+      message: "Product successfully deleted",
+    });
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+
 module.exports = {
   createProduct,
   getProductbyQueryParams,
   getProductbyParams,
   updateProduct,
+  deleteProduct
 };
