@@ -4,7 +4,7 @@ const aws = require("aws-sdk");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
-const valid=require('../validator/validation')
+
 
 // validation for Profile image
 function isValidImage(value) {
@@ -176,7 +176,9 @@ const updateUser = async function (req, res) {
       obj.email = email;
     }
 
-    if (profileImage) {
+    // ... validation for Profile Image ... //
+
+    if (profileImage && profileImage.length > 0) {
       if (profileImage.length > 1) {
         return res
           .status(400)
@@ -193,7 +195,7 @@ const updateUser = async function (req, res) {
       obj.profileImage = uploadedFileURL;
     }
 
-    // ..........................validation for password .......................... //
+    // ... validation for password ... //
     const saltRounds = 10;
     if (password) obj.password = await bcrypt.hash(password, saltRounds);
 
@@ -207,35 +209,44 @@ const updateUser = async function (req, res) {
       }
       obj.phone = phone;
     }
-    if(address){
-    if (address.shipping) {
-      if (!valid.isValidBody(address.shipping.street)) {
-        return res.send({msg:'Please enter valid street name'})
+
+    // ... validation for Address ... //
+    if (address) {
+      if (address.shipping) {
+        if (address.shipping.street) {
+          obj["address.shipping.street"] = address.shipping.street;
+        }
+        if (address.shipping.city) {
+          obj["address.shipping.city"] = address.shipping.city;
+        }
+        if (address.shipping.pincode) {
+          obj["address.shipping.pincode"] = address.shipping.pincode;
+        }
       }
-      obj["address.shipping.street"] = address.shipping.street;
-      if (address.shipping.city) {
-        obj["address.shipping.city"] = address.shipping.city;
-      }
-      if (address.shipping.pincode) {
-        obj["address.shipping.pincode"] = address.shipping.pincode;
+      if (address.billing) {
+        if (address.billing.street) {
+          obj["address.billing.street"] = address.billing.street;
+        }
+        if (address.billing.city) {
+          obj["address.billing.city"] = address.billing.city;
+        }
+        if (address.billing.pincode) {
+          obj["address.billing.pincode"] = address.billing.pincode;
+        }
       }
     }
-  
-    if (address.billing) {
-      if (address.billing.street) {
-        obj["address.billing.street"] = address.billing.street;
-      }
-      if (address.billing.city) {
-        obj["address.billing.city"] = address.billing.city;
-      }
-      if (address.billing.pincode) {
-        obj["address.billing.pincode"] = address.billing.pincode;
-      }
+
+    const updateUserDetails = await userModel.findOneAndUpdate(
+      { _id: userId },
+      obj,
+      { new: true }
+    );
+
+    if (!updateUserDetails) {
+      return res.status(403).send({ status: false, msg: "User not found" });
     }
-  }
-    const updateUserDetails = await userModel.findOneAndUpdate({ _id: userId },obj,{ new: true });
- 
-    return res.status(201).send({
+
+    return res.status(200).send({
       status: true,
       message: "User profile updated",
       data: updateUserDetails
