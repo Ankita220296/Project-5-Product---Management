@@ -238,7 +238,7 @@ const validationForLoginUser = async function (req, res, next) {
 // ....................................... Validation for Updated User .................................//
 const validationForUpdateUser = async function (req, res, next) {
   try {
-    let userId = req.params.userId
+    let userId = req.params.userId;
     const user = await userModel.findById(userId);
 
     // authorization
@@ -256,7 +256,8 @@ const validationForUpdateUser = async function (req, res, next) {
         .status(400)
         .send({ status: false, message: "Please input Parameters" });
     }
-    if (fname) {
+
+    if (fname != undefined) {
       if (!isValidBody(fname)) {
         return res.status(400).send({
           status: false,
@@ -271,7 +272,7 @@ const validationForUpdateUser = async function (req, res, next) {
       }
     }
 
-    if (lname) {
+    if (lname != undefined) {
       if (!isValidBody(lname)) {
         return res.status(400).send({
           status: false,
@@ -286,7 +287,7 @@ const validationForUpdateUser = async function (req, res, next) {
       }
     }
 
-    if (email)
+    if (email != undefined)
       if (!isValidBody(email)) {
         return res
           .status(400)
@@ -297,7 +298,7 @@ const validationForUpdateUser = async function (req, res, next) {
           .send({ status: false, message: "Email is not valid" });
       }
 
-    if (phone) {
+    if (phone != undefined) {
       if (!isValidMobileNumber(phone)) {
         return res.status(400).send({
           status: false,
@@ -306,7 +307,7 @@ const validationForUpdateUser = async function (req, res, next) {
       }
     }
 
-    if (password) {
+    if (password != undefined) {
       if (!isValidPassword(password)) {
         return res.status(400).send({
           status: false,
@@ -385,6 +386,7 @@ const validationForUpdateUser = async function (req, res, next) {
   }
   next();
 };
+
 module.exports = {
   validationForUser,
   validationForLoginUser,

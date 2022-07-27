@@ -56,7 +56,6 @@ const registerUser = async function (req, res) {
         .status(400)
         .send({ status: false, message: "Please upload only one image" });
     }
-
     if (!isValidImage(files[0].originalname)) {
       return res.status(400).send({
         status: false,
@@ -178,7 +177,7 @@ const updateUser = async function (req, res) {
     let profileImage = req.files;
 
     if (profileImage && profileImage.length > 0) {
-      if (profileImage.length > 1) {
+      if (files.length > 1) {
         return res
           .status(400)
           .send({ status: false, message: "Please upload only one image" });
@@ -192,7 +191,8 @@ const updateUser = async function (req, res) {
       }
       let uploadedFileURL = await uploadFile(profileImage[0]);
       obj.profileImage = uploadedFileURL;
-    }
+    } 
+   
 
     // ... validation for password ... //
     const saltRounds = 10;
