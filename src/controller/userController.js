@@ -177,7 +177,7 @@ const updateUser = async function (req, res) {
     let profileImage = req.files;
 
     if (profileImage && profileImage.length > 0) {
-      if (files.length > 1) {
+      if (profileImage.length > 1) {
         return res
           .status(400)
           .send({ status: false, message: "Please upload only one image" });

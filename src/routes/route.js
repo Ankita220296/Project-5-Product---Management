@@ -46,6 +46,12 @@ router.get("/products", productController.getProductbyQueryParams);
 
 router.get("/products/:productId", productController.getProductbyParams);
 
+router.put(
+  "/products/:productId",
+  productValidation.validationForUpdateProduct,
+  productController.updateProduct
+);
+
 router.all("/**", function (req, res) {
   res.status(404).send({
     status: false,
