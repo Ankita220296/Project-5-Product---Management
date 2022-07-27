@@ -2,6 +2,7 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const aws = require("aws-sdk");
 const jwt = require("jsonwebtoken");
+const uploadFile = require("../middleware/aws");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -11,32 +12,6 @@ function isValidImage(value) {
   const result = regEx.test(value);
   return result;
 }
-
-aws.config.update({
-  accessKeyId: "AKIAY3L35MCRVFM24Q7U",
-  secretAccessKey: "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",
-  region: "ap-south-1",
-});
-
-let uploadFile = async (file) => {
-  return new Promise(function (resolve, reject) {
-    let s3 = new aws.S3({ apiVersion: "2006-03-01" });
-
-    var uploadParams = {
-      ACL: "public-read",
-      Bucket: "classroom-training-bucket",
-      Key: "Group56/" + file.originalname,
-      Body: file.buffer,
-    };
-
-    s3.upload(uploadParams, function (err, data) {
-      if (err) {
-        return reject({ error: err });
-      }
-      return resolve(data.Location);
-    });
-  });
-};
 
 // .................................. Create User .............................//
 const registerUser = async function (req, res) {
@@ -64,7 +39,7 @@ const registerUser = async function (req, res) {
       });
     }
 
-    let uploadedFileURL = await uploadFile(files[0]);
+    let uploadedFileURL = await uploadFile.uploadFile(files[0]);
     data.profileImage = uploadedFileURL;
 
     data.password = await bcrypt.hash(password, saltRounds);
@@ -191,8 +166,7 @@ const updateUser = async function (req, res) {
       }
       let uploadedFileURL = await uploadFile(profileImage[0]);
       obj.profileImage = uploadedFileURL;
-    } 
-   
+    }
 
     // ... validation for password ... //
     const saltRounds = 10;
@@ -217,7 +191,8 @@ const updateUser = async function (req, res) {
         }
         if (address.shipping.city) {
           obj["address.shipping.city"] = address.shipping.city;
-   0     }
+          0;
+        }
         if (address.shipping.pincode) {
           obj["address.shipping.pincode"] = address.shipping.pincode;
         }

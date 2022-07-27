@@ -1,7 +1,5 @@
 const aws = require("aws-sdk");
 
-const awsMw = async function (req, res) {
-  try {
     aws.config.update({
       accessKeyId: "AKIAY3L35MCRVFM24Q7U",
       secretAccessKey: "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",
@@ -27,12 +25,6 @@ const awsMw = async function (req, res) {
         });
       });
     };
-  } catch (error) {
-    return res.status(500).send({
-      status: false,
-      message: error.message,
-    });
-  }
-};
 
-module.exports = { awsMw };
+
+module.exports = { uploadFile };

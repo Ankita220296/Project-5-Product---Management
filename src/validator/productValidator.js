@@ -1,12 +1,9 @@
 const productModel = require("../models/productModel");
 const { checkBodyParams, isValidBody } = require("../validator/userValidation");
 
-const isValidPrice = function (x) {
-  let checkPrice = /^\s*[0-9\.]{1,7}$/;
-  if (checkPrice.test(x)) {
-    return true;
-  }
-  return false;
+const isValidPrice = function (value) {
+  if (!/^\s*[0-9\.]{1,7}$/.test(value)) return false;
+  else return true;
 };
 
 // Validation for length of characters
@@ -39,12 +36,9 @@ const isCurrencyFormat = function (x) {
   }
   return true;
 };
-const isValidInstallments = function (x) {
-  let checkIns = /^[0-9]{1}$/;
-  if (checkIns.test(x)) {
-    return true;
-  }
-  return false;
+const isValidInstallments = function (value) {
+  if (!/^[0-9]{1}$/.test(value)) return false;
+  else return true;
 };
 
 let isValidSize = (sizes) => {
@@ -227,7 +221,7 @@ const validationForUpdateProduct = async function (req, res, next) {
       style,
       availableSizes,
       installments,
-      isDeleted
+      isDeleted,
     } = data;
 
     if (!checkBodyParams(data)) {

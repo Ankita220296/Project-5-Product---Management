@@ -1,15 +1,13 @@
 const userModel = require("../models/userModel");
 const productModel = require("../models/productModel");
 const aws = require("aws-sdk");
-// const {awsMiddleware,awsMw} = require("../middleware/aws")
+const uploadFile = require("../middleware/aws");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
 const isValidBody = function (value) {
   if (typeof value === "undefined" || value === "null") return false;
   if (typeof value === "string" && value.trim().length === 0) return false;
-  // if (typeof value === "number" && value.toString().trim().length === 0)
-  //   return false;
   return true;
 };
 
@@ -19,32 +17,6 @@ function isValidImage(value) {
   const result = regEx.test(value);
   return result;
 }
-
-aws.config.update({
-  accessKeyId: "AKIAY3L35MCRVFM24Q7U",
-  secretAccessKey: "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",
-  region: "ap-south-1",
-});
-
-let uploadFile = async (file) => {
-  return new Promise(function (resolve, reject) {
-    let s3 = new aws.S3({ apiVersion: "2006-03-01" });
-
-    var uploadParams = {
-      ACL: "public-read",
-      Bucket: "classroom-training-bucket",
-      Key: "Group56/" + file.originalname,
-      Body: file.buffer,
-    };
-
-    s3.upload(uploadParams, function (err, data) {
-      if (err) {
-        return reject({ error: err });
-      }
-      return resolve(data.Location);
-    });
-  });
-};
 
 // .................................. Create Product .............................//
 const createProduct = async function (req, res) {
@@ -71,7 +43,7 @@ const createProduct = async function (req, res) {
       });
     }
 
-    let uploadedFileURL = await uploadFile(files[0]);
+    let uploadedFileURL = await uploadFile.uploadFile(files[0]);
     data.productImage = uploadedFileURL;
 
     const productCreation = await productModel.create(data);
@@ -273,4 +245,9 @@ const updateProduct = async function (req, res) {
   }
 };
 
-module.exports = { createProduct, getProductbyQueryParams, getProductbyParams , updateProduct };
+module.exports = {
+  createProduct,
+  getProductbyQueryParams,
+  getProductbyParams,
+  updateProduct,
+};
