@@ -8,7 +8,7 @@ const ObjectId = mongoose.Types.ObjectId;
 
 // validation for Profile image
 function isValidImage(value) {
-  const regEx = /.+\.(?:(jpg|gif|png|jpeg))/; //It will handle all undefined, null, only numbersNaming, dot, space allowed in between
+  const regEx = /.+\.(?:(jpg|gif|png|jpeg|jfif))/; //It will handle all undefined, null, only numbersNaming, dot, space allowed in between
   const result = regEx.test(value);
   return result;
 }
@@ -57,7 +57,6 @@ const registerUser = async function (req, res) {
         .status(400)
         .send({ status: false, message: "Please upload only one image" });
     }
-    
     if (!isValidImage(files[0].originalname)) {
       return res.status(400).send({
         status: false,
@@ -122,7 +121,7 @@ const loginUser = async function (req, res) {
 // .................................. Get User .............................//
 const getUser = async function (req, res) {
   try {
-    console.log(req.headers);
+    //console.log(req.headers);
     let userId = req.params.userId;
     if (!ObjectId.isValid(userId)) {
       return res
@@ -179,7 +178,7 @@ const updateUser = async function (req, res) {
     // ... validation for Profile Image ... //
 
     if (profileImage && profileImage.length > 0) {
-      if (profileImage.length > 1) {
+      if (files.length > 1) {
         return res
           .status(400)
           .send({ status: false, message: "Please upload only one image" });
@@ -188,12 +187,13 @@ const updateUser = async function (req, res) {
         return res.status(400).send({
           status: false,
           message:
-            "Please upload only image file with extension jpg, png, gif, jpeg",
+            "Please upload only image file with extension jpg, png, gif, jpeg, jfif",
         });
       }
       let uploadedFileURL = await uploadFile(profileImage[0]);
       obj.profileImage = uploadedFileURL;
-    }
+    } 
+   
 
     // ... validation for password ... //
     const saltRounds = 10;
@@ -218,7 +218,7 @@ const updateUser = async function (req, res) {
         }
         if (address.shipping.city) {
           obj["address.shipping.city"] = address.shipping.city;
-        }
+   0     }
         if (address.shipping.pincode) {
           obj["address.shipping.pincode"] = address.shipping.pincode;
         }
