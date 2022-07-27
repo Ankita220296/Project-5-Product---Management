@@ -7,7 +7,7 @@ const ObjectId = mongoose.Types.ObjectId;
 
 // validation for Profile image
 function isValidImage(value) {
-  const regEx = /.+\.(?:(jpg|gif|png|jpeg))/; //It will handle all undefined, null, only numbersNaming, dot, space allowed in between
+  const regEx = /.+\.(?:(jpg|gif|png|jpeg|jfif))/; //It will handle all undefined, null, only numbersNaming, dot, space allowed in between
   const result = regEx.test(value);
   return result;
 }
@@ -120,7 +120,7 @@ const loginUser = async function (req, res) {
 // .................................. Get User .............................//
 const getUser = async function (req, res) {
   try {
-    console.log(req.headers);
+    //console.log(req.headers);
     let userId = req.params.userId;
     if (!ObjectId.isValid(userId)) {
       return res
@@ -186,7 +186,7 @@ const updateUser = async function (req, res) {
         return res.status(400).send({
           status: false,
           message:
-            "Please upload only image file with extension jpg, png, gif, jpeg",
+            "Please upload only image file with extension jpg, png, gif, jpeg, jfif",
         });
       }
       let uploadedFileURL = await uploadFile(profileImage[0]);
@@ -217,7 +217,7 @@ const updateUser = async function (req, res) {
         }
         if (address.shipping.city) {
           obj["address.shipping.city"] = address.shipping.city;
-        }
+   0     }
         if (address.shipping.pincode) {
           obj["address.shipping.pincode"] = address.shipping.pincode;
         }
