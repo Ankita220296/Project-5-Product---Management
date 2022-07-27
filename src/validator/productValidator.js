@@ -175,12 +175,15 @@ const validationForProduct = async function (req, res, next) {
       .split(" ")
       .map((s) => s.trim().toUpperCase());
 
-    // if (!isValidEnum(availSizes)) {
-    //   return res.status(400).send({
-    //     status: false,
-    //     message: "Size can only be S, XS, M, X, L, XXL, XL",
-    //   });
-    // }
+
+    if (!isValidEnum(availSizes)) {
+      return res.status(400).send({
+        status: false,
+        message: "Size can only be S, XS, M, X, L, XXL, XL",
+      });
+    }
+
+    data.availableSizes=availSizes
 
     if (!isValidBody(installments)) {
       return res.status(400).send({
