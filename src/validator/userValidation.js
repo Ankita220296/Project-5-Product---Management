@@ -93,6 +93,14 @@ const validationForUser = async function (req, res, next) {
         .send({ status: false, message: "This Email is already in use" });
     }
 
+    let profileImage = req.files;
+    if (profileImage.length === 0) {
+      return res.status(400).send({
+        status: false,
+        message: "Please upload profile image with right format",
+      });
+    }
+    
     if (!phone) {
       return res.status(400).send({
         status: false,
@@ -248,8 +256,9 @@ const validationForUpdateUser = async function (req, res, next) {
 
     let data = req.body;
     const { fname, lname, email, phone, password, address } = data;
+    let profileImage = req.files;
 
-    if (!checkBodyParams(data)) {
+    if (!checkBodyParams(data) && !profileImage) {
       return res
         .status(400)
         .send({ status: false, message: "Please input Parameters" });
@@ -295,6 +304,15 @@ const validationForUpdateUser = async function (req, res, next) {
           .status(400)
           .send({ status: false, message: "Email is not valid" });
       }
+
+    if (profileImage.length === 0) {
+      return res
+        .status(400)
+        .send({
+          status: false,
+          message: "Please upload profile image with right format",
+        });
+    }
 
     if (phone != undefined) {
       if (!isValidMobileNumber(phone)) {

@@ -23,19 +23,19 @@ const createProduct = async function (req, res) {
   try {
     let data = req.body;
 
-    let files = req.files;
+    let productImage = req.files;
 
-    if (files.length == 0) {
+    if (productImage.length == 0) {
       return res
         .status(400)
         .send({ status: false, message: "Please Upload the Product Image" });
-    } else if (files.length > 1) {
+    } else if (productImage.length > 1) {
       return res
         .status(400)
         .send({ status: false, message: "Please upload only one image" });
     }
 
-    if (!isValidImage(files[0].originalname)) {
+    if (!isValidImage(productImage[0].originalname)) {
       return res.status(400).send({
         status: false,
         message:
@@ -43,7 +43,7 @@ const createProduct = async function (req, res) {
       });
     }
 
-    let uploadedFileURL = await uploadFile.uploadFile(files[0]);
+    let uploadedFileURL = await uploadFile.uploadFile(productImage[0]);
     data.productImage = uploadedFileURL;
 
     const productCreation = await productModel.create(data);
@@ -68,7 +68,7 @@ const getProductbyQueryParams = async function (req, res) {
 
     const availableSizes = size;
     if (availableSizes) {
-      let newSize = size.split(" ").map((ele) => ele.trim());
+      let newSize = size.split(",").map((ele) => ele.trim());
       obj.availableSizes = { $all: newSize };
     }
     if (size != undefined) {
@@ -79,8 +79,8 @@ const getProductbyQueryParams = async function (req, res) {
       }
     }
 
-    const title = name;
-    if (title) obj.title = name;
+    let title = name;
+    if (title) obj.title = { $regex: name };
     if (name != undefined) {
       if (!isValidBody(name)) {
         return res
@@ -89,7 +89,6 @@ const getProductbyQueryParams = async function (req, res) {
       }
     }
 
-    let price;
     if (priceGreaterThan && priceLessThan) {
       obj.price = { $gte: priceGreaterThan, $lte: priceLessThan };
     } else if (priceGreaterThan) {
@@ -105,11 +104,19 @@ const getProductbyQueryParams = async function (req, res) {
           .send({ status: true, message: "Please enter proper maximum price" });
       }
     }
-    if (priceGreaterThan) {
+
+    if (priceGreaterThan || priceLessThan) {
       let priceDetails = await productModel.find(obj).sort({ price: 1 });
-      return res
-        .status(200)
-        .send({ status: true, message: "Product list", data: priceDetails });
+      if (priceDetails.length === 0) {
+        return res
+          .status(400)
+          .send({ status: true, message: "Product not found" });
+      }
+      return res.status(200).send({
+        status: true,
+        message: "Product list",
+        data: priceDetails,
+      });
     }
 
     if (priceLessThan != undefined) {
@@ -119,19 +126,17 @@ const getProductbyQueryParams = async function (req, res) {
           .send({ status: true, message: "Please enter proper minimum price" });
       }
     }
-    if (priceLessThan) {
-      let priceDetails = await productModel.find(obj).sort({ price: -1 });
-      return res
-        .status(200)
-        .send({ status: true, message: "Product list", data: priceDetails });
-    }
 
     let productDetails = await productModel.find(obj);
-    if (productDetails) {
+    if (productDetails.length === 0) {
       return res
-        .status(200)
-        .send({ status: true, message: "Product list", data: productDetails });
+        .status(400)
+        .send({ status: true, message: "Product not found" });
     }
+
+    return res
+      .status(200)
+      .send({ status: true, message: "Product list", data: productDetails });
   } catch (error) {
     res.status(500).send({ status: false, message: error.message });
   }
@@ -198,7 +203,6 @@ const updateProduct = async function (req, res) {
     }
 
     if (discription) obj.discription = discription;
-
     if (price) obj.price = price;
     if (isFreeShipping) obj.isFreeShipping = isFreeShipping;
     if (style) obj.style = style;
@@ -221,7 +225,7 @@ const updateProduct = async function (req, res) {
             "Please upload only image file with extension jpg, png, gif, jpeg, jfif",
         });
       }
-      let uploadedFileURL = await uploadFile(productImage[0]);
+      let uploadedFileURL = await uploadFile.uploadFile(productImage[0]);
       obj.productImage = uploadedFileURL;
     }
 
@@ -279,5 +283,5 @@ module.exports = {
   getProductbyQueryParams,
   getProductbyParams,
   updateProduct,
-  deleteProduct
+  deleteProduct,
 };

@@ -20,18 +20,18 @@ const registerUser = async function (req, res) {
     const saltRounds = 10;
     let password = data.password;
 
-    let files = req.files;
+    let profileImage = req.files;
 
-    if (files.length == 0) {
+    if (profileImage.length == 0) {
       return res
         .status(400)
         .send({ status: false, message: "Please Upload the Profile Image" });
-    } else if (files.length > 1) {
+    } else if (profileImage.length > 1) {
       return res
         .status(400)
         .send({ status: false, message: "Please upload only one image" });
     }
-    if (!isValidImage(files[0].originalname)) {
+    if (!isValidImage(profileImage[0].originalname)) {
       return res.status(400).send({
         status: false,
         message:
@@ -39,7 +39,7 @@ const registerUser = async function (req, res) {
       });
     }
 
-    let uploadedFileURL = await uploadFile.uploadFile(files[0]);
+    let uploadedFileURL = await uploadFile.uploadFile(profileImage[0]);
     data.profileImage = uploadedFileURL;
 
     data.password = await bcrypt.hash(password, saltRounds);
@@ -164,7 +164,7 @@ const updateUser = async function (req, res) {
             "Please upload only image file with extension jpg, png, gif, jpeg, jfif",
         });
       }
-      let uploadedFileURL = await uploadFile(profileImage[0]);
+      let uploadedFileURL = await uploadFile.uploadFile(profileImage[0]);
       obj.profileImage = uploadedFileURL;
     }
 
