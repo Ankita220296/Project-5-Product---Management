@@ -25,24 +25,6 @@ const createProduct = async function (req, res) {
 
     let productImage = req.files;
 
-    if (productImage.length == 0) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please Upload the Product Image" });
-    } else if (productImage.length > 1) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please upload only one image" });
-    }
-
-    if (!isValidImage(productImage[0].originalname)) {
-      return res.status(400).send({
-        status: false,
-        message:
-          "Please upload only image file with extension jpg, png, gif, jpeg ,jfif",
-      });
-    }
-
     let uploadedFileURL = await uploadFile.uploadFile(productImage[0]);
     data.productImage = uploadedFileURL;
 
@@ -69,7 +51,7 @@ const getProductbyQueryParams = async function (req, res) {
     const availableSizes = size;
     if (availableSizes) {
       let newSize = size.split(",").map((ele) => ele.trim());
-      obj.availableSizes = { $all: newSize };
+      obj.availableSizes = { $in: newSize };
     }
     if (size != undefined) {
       if (!isValidBody(size)) {

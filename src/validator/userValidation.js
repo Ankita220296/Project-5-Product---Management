@@ -40,13 +40,36 @@ const lengthOfCharacter = function (value) {
   else return true;
 };
 
+// validation for Profile image
+function isValidImage(value) {
+  const regEx = /.+\.(?:(jpg|gif|png|jpeg|jfif))/; //It will handle all undefined, null, only numbersNaming, dot, space allowed in between
+  const result = regEx.test(value);
+  return result;
+}
 // ....................................... Validation for User .................................//
 const validationForUser = async function (req, res, next) {
   try {
     let data = req.body;
     const { fname, lname, email, phone, password, address } = data;
+    let profileImage = req.files;
 
-    if (!checkBodyParams(data)) {
+    if (profileImage.length == 0) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please Upload the Profile Image" });
+    } else if (profileImage.length > 1) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please upload only one image" });
+    }
+    if (!isValidImage(profileImage[0].originalname)) {
+      return res.status(400).send({
+        status: false,
+        message:
+          "Please upload only image file with extension jpg, png, gif, jpeg",
+      });
+    }
+    if (!checkBodyParams(data) && !profileImage) {
       return res
         .status(400)
         .send({ status: false, message: "Please input Parameters" });
@@ -93,14 +116,13 @@ const validationForUser = async function (req, res, next) {
         .send({ status: false, message: "This Email is already in use" });
     }
 
-    let profileImage = req.files;
-    if (profileImage.length === 0) {
-      return res.status(400).send({
-        status: false,
-        message: "Please upload profile image with right format",
-      });
-    }
-    
+    // if (profileImage.length === 0) {
+    //   return res.status(400).send({
+    //     status: false,
+    //     message: "Please upload profile image with right format",
+    //   });
+    // }
+
     if (!phone) {
       return res.status(400).send({
         status: false,
@@ -127,7 +149,8 @@ const validationForUser = async function (req, res, next) {
           "Please enter valid password with one uppercase ,lowercse and special character and length should be 8 to 15",
       });
     }
-    if (!address.shipping) {
+
+    if (!address) {
       return res.status(400).send({
         status: false,
         message: "Please enter shipping address",
@@ -304,15 +327,18 @@ const validationForUpdateUser = async function (req, res, next) {
           .status(400)
           .send({ status: false, message: "Email is not valid" });
       }
-
-    if (profileImage.length === 0) {
+    const existEmail = await userModel.findOne({ email });
+    if (existEmail) {
       return res
         .status(400)
-        .send({
-          status: false,
-          message: "Please upload profile image with right format",
-        });
+        .send({ status: false, message: "This Email is already in use" });
     }
+    // if (profileImage.length === 0) {
+    //   return res.status(400).send({
+    //     status: false,
+    //     message: "Please upload profile image with right format",
+    //   });
+    // }
 
     if (phone != undefined) {
       if (!isValidMobileNumber(phone)) {
@@ -323,6 +349,13 @@ const validationForUpdateUser = async function (req, res, next) {
       }
     }
 
+    const existPhone = await userModel.findOne({ phone });
+    if (existPhone) {
+      return res.status(400).send({
+        status: false,
+        message: "This Mobile number is already in use",
+      });
+    }
     if (password != undefined) {
       if (!isValidPassword(password)) {
         return res.status(400).send({

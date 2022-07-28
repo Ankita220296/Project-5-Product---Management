@@ -12,32 +12,13 @@ function isValidImage(value) {
   const result = regEx.test(value);
   return result;
 }
-
 // .................................. Create User .............................//
 const registerUser = async function (req, res) {
   try {
     let data = req.body;
     const saltRounds = 10;
     let password = data.password;
-
     let profileImage = req.files;
-
-    if (profileImage.length == 0) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please Upload the Profile Image" });
-    } else if (profileImage.length > 1) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please upload only one image" });
-    }
-    if (!isValidImage(profileImage[0].originalname)) {
-      return res.status(400).send({
-        status: false,
-        message:
-          "Please upload only image file with extension jpg, png, gif, jpeg",
-      });
-    }
 
     let uploadedFileURL = await uploadFile.uploadFile(profileImage[0]);
     data.profileImage = uploadedFileURL;
