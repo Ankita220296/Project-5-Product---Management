@@ -46,6 +46,13 @@ let isValidSize = (sizes) => {
   return sizes.every((e) => availableSizes.includes(e));
 };
 
+// validation for Profile image
+function isValidImage(value) {
+  const regEx = /.+\.(?:(jpg|gif|png|jpeg|jfif))/; //It will handle all undefined, null, only numbersNaming, dot, space allowed in between
+  const result = regEx.test(value);
+  return result;
+}
+
 // ....................................... Validation for Product .................................//
 const validationForProduct = async function (req, res, next) {
   try {
@@ -62,6 +69,25 @@ const validationForProduct = async function (req, res, next) {
       installments,
       isDeleted,
     } = data;
+
+    let productImage = req.files;
+    if (productImage.length == 0) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please Upload the Product Image" });
+    } else if (productImage.length > 1) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please upload only one image" });
+    }
+
+    if (!isValidImage(productImage[0].originalname)) {
+      return res.status(400).send({
+        status: false,
+        message:
+          "Please upload only image file with extension jpg, png, gif, jpeg ,jfif",
+      });
+    }
 
     if (!checkBodyParams(data)) {
       return res
@@ -148,8 +174,21 @@ const validationForProduct = async function (req, res, next) {
         });
       }
     }
+    // let productImage = req.files;
+    // if (productImage.length == 0) {
+    //   return res.status(400).send({
+    //     status: false,
+    //     message: "Please upload product image with right format",
+    //   });
+    // }
 
-    if (!isValidBody(style) && !lengthOfCharacter(style)) {
+    if (!isValidBody(style)) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter style",
+      });
+    }
+    if (!lengthOfCharacter(style)) {
       return res.status(400).send({
         status: false,
         message: "Please mention the style of the product",
@@ -164,7 +203,7 @@ const validationForProduct = async function (req, res, next) {
     }
 
     availableSizes = availableSizes
-      .split(" ")
+      .split(",")
       .map((s) => s.trim().toUpperCase());
 
     if (!isValidSize(availableSizes)) {
@@ -224,11 +263,14 @@ const validationForUpdateProduct = async function (req, res, next) {
       isDeleted,
     } = data;
 
-    if (!checkBodyParams(data)) {
+    let productImage = req.files;
+
+    if (!checkBodyParams(data) && !productImage) {
       return res
         .status(400)
         .send({ status: false, message: "Please input Parameters" });
     }
+
     if (title != undefined) {
       if (!isValidBody(title)) {
         return res.status(400).send({
@@ -327,7 +369,7 @@ const validationForUpdateProduct = async function (req, res, next) {
 
     if (availableSizes != undefined) {
       availableSizes = availableSizes
-        .split(" ")
+        .split(",")
         .map((s) => s.trim().toUpperCase());
 
       if (!isValidSize(availableSizes)) {
