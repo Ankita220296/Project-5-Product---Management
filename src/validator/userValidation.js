@@ -115,14 +115,6 @@ const validationForUser = async function (req, res, next) {
         .status(400)
         .send({ status: false, message: "This Email is already in use" });
     }
-
-    // if (profileImage.length === 0) {
-    //   return res.status(400).send({
-    //     status: false,
-    //     message: "Please upload profile image with right format",
-    //   });
-    // }
-
     if (!phone) {
       return res.status(400).send({
         status: false,
@@ -333,12 +325,6 @@ const validationForUpdateUser = async function (req, res, next) {
         .status(400)
         .send({ status: false, message: "This Email is already in use" });
     }
-    // if (profileImage.length === 0) {
-    //   return res.status(400).send({
-    //     status: false,
-    //     message: "Please upload profile image with right format",
-    //   });
-    // }
 
     if (phone != undefined) {
       if (!isValidMobileNumber(phone)) {

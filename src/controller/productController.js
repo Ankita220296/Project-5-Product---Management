@@ -45,7 +45,7 @@ const createProduct = async function (req, res) {
 // .................................. Get Product by Query Params .............................//
 const getProductbyQueryParams = async function (req, res) {
   try {
-    let { size, name, priceGreaterThan, priceLessThan } = req.query;
+    let { size, name, priceGreaterThan, priceLessThan, priceSort } = req.query;
     const obj = { isDeleted: false };
 
     const availableSizes = size;
@@ -87,6 +87,31 @@ const getProductbyQueryParams = async function (req, res) {
       }
     }
 
+    if (priceSort != undefined) {
+      if (!["1", "-1"].includes(priceSort)) {
+        return res.status(200).send({
+          status: true,
+          message:
+            "Please enter price sort value for ascending order gives 1 or for descending order gives -1",
+        });
+      }
+    }
+
+    if (priceSort) {
+      price = priceSort;
+      let priceDetails = await productModel.find(obj).sort({ price: price });
+      if (priceDetails.length === 0) {
+        return res
+          .status(400)
+          .send({ status: true, message: "Product not found" });
+      }
+      return res.status(200).send({
+        status: true,
+        message: "Product list",
+        data: priceDetails,
+      });
+    }
+
     if (priceGreaterThan || priceLessThan) {
       let priceDetails = await productModel.find(obj).sort({ price: 1 });
       if (priceDetails.length === 0) {
@@ -100,7 +125,7 @@ const getProductbyQueryParams = async function (req, res) {
         data: priceDetails,
       });
     }
-
+    
     if (priceLessThan != undefined) {
       if (!isValidBody(priceLessThan)) {
         return res
