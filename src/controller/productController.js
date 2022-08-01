@@ -31,7 +31,7 @@ const createProduct = async function (req, res) {
     const productCreation = await productModel.create(data);
     return res.status(201).send({
       status: true,
-      message: "User created successfully",
+      message: "Product created successfully",
       data: productCreation,
     });
   } catch (error) {
@@ -267,3 +267,4 @@ module.exports = {
   updateProduct,
   deleteProduct,
 };
+
