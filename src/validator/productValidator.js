@@ -174,14 +174,7 @@ const validationForProduct = async function (req, res, next) {
         });
       }
     }
-    // let productImage = req.files;
-    // if (productImage.length == 0) {
-    //   return res.status(400).send({
-    //     status: false,
-    //     message: "Please upload product image with right format",
-    //   });
-    // }
-
+   
     if (!isValidBody(style)) {
       return res.status(400).send({
         status: false,
