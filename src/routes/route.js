@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controller/userController");
 const productController = require("../controller/productController");
+const cartController = require("../controller/cartController");
 const validation = require("../validator/userValidation");
 const productValidation = require("../validator/productValidator");
 const auth = require("../middleware/auth");
@@ -53,6 +54,8 @@ router.put(
 );
 
 router.delete("/products/:productId", productController.deleteProduct);
+
+router.post("/users/:userId/cart", cartController.createCart);
 
 router.all("/**", function (req, res) {
   res.status(404).send({

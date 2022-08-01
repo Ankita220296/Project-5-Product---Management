@@ -125,7 +125,7 @@ const getProductbyQueryParams = async function (req, res) {
         data: priceDetails,
       });
     }
-    
+
     if (priceLessThan != undefined) {
       if (!isValidBody(priceLessThan)) {
         return res
