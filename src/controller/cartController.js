@@ -6,10 +6,7 @@ const userModel = require("../models/userModel");
 const createCart = async function (req, res) {
   try {
     let data = req.body;
-
-    let items = data;
-    let productId = items[0].productId;
-    let quantity = items[0].quantity;
+    let {productId,cartId} = data
     let userId = req.params.userId;
 
     let user = await userModel.findById(userId);
@@ -19,34 +16,31 @@ const createCart = async function (req, res) {
         message: "User does not exist",
       });
     }
+ 
+      const checkCart=await cartModel.findOne({_id:cartId,isDeleted:false})
+      console.log(checkCart)
+      if(!checkCart){
+        return res.status(400).send({status:false,msg:"This cart is not availble in Database"})
+      }
     
-    let newCart = {items : [],totalPrice : 0,totalItems:0}
-    for(let i = 0 ; i < items.length ; i++){
-        const {productId, quantity} = items[i]
-    }
-
-    let newObj = {}
+    
     let product = await productModel.findOne({
       _id: productId,
       isDeleted:false
     });
-
-    obj.productId = productId
-    newCart.items.push(newObj)
-    totalItems = totalItems + newObj.quantity
-    totalPrice = newObj.quantity * product.price
-    
-    // if (!product) {
-    //   return res.status(201).send({
-    //     status: true,
-    //     message: "Product does not exist",
-    //   });
-    // }
+  
+    totalPrice=checkCart.totalPrice+product.price
+    totalItems=checkCart.totalItems+1
+    console.log(totalPrice)
+    console.log(totalItems)
+    let cartUpdate=await cartModel.findOneAndUpdate({cartId},{$push:{items:[{productId:productId,quantity:1}]},totalPrice:totalPrice,totalItems:totalItems},{new:true})
+    console.log(cartUpdate)
+   
 
     const obj = {
       userId: userId,
       items: [{ productId: productId, quantity: 1 }],
-      totalPrice: price,
+      totalPrice: totalPrice,
       totalItems: 1,
     };
 
