@@ -32,9 +32,9 @@ const createCart = async function (req, res) {
 
     let user = await userModel.findById(userId);
     if (!user) {
-      return res.status(201).send({
+      return res.status(404).send({
         status: true,
-        message: "User does not exist",
+        message: "User not found",
       });
     }
     // authorization
@@ -43,12 +43,12 @@ const createCart = async function (req, res) {
         .status(403)
         .send({ status: false, msg: "You are not authorized...." });
 
-    let findProduct = await productModel.findOne({
+    let product = await productModel.findOne({
       _id: productId,
       isDeleted: false,
     });
-    if (!findProduct) {
-      return res.status(400).send({
+    if (!product) {
+      return res.status(404).send({
         status: false,
         msg: "Product not found",
       });
@@ -62,7 +62,7 @@ const createCart = async function (req, res) {
       });
 
       if (!checkCart) {
-        return res.status(400).send({
+        return res.status(404).send({
           status: false,
           msg: "This cart is not availble",
         });
@@ -83,9 +83,9 @@ const createCart = async function (req, res) {
       if (isProductAlready.length > 0) {
         const updateQuantity = await cartModel.findOneAndUpdate(
           { userId: userId, "items.productId": productId },
-          { $inc: { "items.$.quantity": 1, totalPrice: findProduct.price } },
+          { $inc: { "items.$.quantity": 1, totalPrice: product.price } },
           { new: true }
-        );
+        ).populate([{ path: "items.productId" }]);
         return res.status(201).send({
           status: true,
           message: "cart updated",
@@ -98,12 +98,12 @@ const createCart = async function (req, res) {
         {
           $push: { items: [{ productId: productId, quantity: 1 }] },
           $inc: {
-            totalPrice: findProduct.price,
+            totalPrice: product.price,
             totalItems: 1,
           },
         },
         { new: true }
-      );
+      ).populate([{ path: "items.productId" }]);
 
       return res.status(201).send({
         status: true,
@@ -115,19 +115,151 @@ const createCart = async function (req, res) {
     const obj = {
       userId: userId,
       items: [{ productId: productId, quantity: 1 }],
-      totalPrice: findProduct.price,
+      totalPrice: product.price,
       totalItems: 1,
     };
 
     const cart = await cartModel.create(obj);
+    const newCart = await cartModel.findById(userId).populate([{ path: "items.productId" }]);
     return res
       .status(201)
-      .send({ status: true, message: "New Cart Created", data: cart });
+      .send({ status: true, message: "New Cart Created", data: newCart });
   } catch (error) {
     return res.status(500).send({
       status: false,
       message: error.message,
     });
+  }
+};
+
+// .................................. Update Cart .............................//
+const updateCart = async function (req, res) {
+  try {
+    let userId = req.params.userId;
+    let data = req.body;
+
+    if (!ObjectId.isValid(userId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "UserId is not valid" });
+    }
+    const { productId, cartId, removeProduct } = data;
+
+    if (!ObjectId.isValid(productId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "ProductId is not valid" });
+    }
+
+    let user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).send({
+        status: true,
+        message: "User does not exist",
+      });
+    }
+    // authorization
+    if (req.headers.userId !== user._id.toString())
+      return res
+        .status(403)
+        .send({ status: false, msg: "You are not authorized...." });
+
+    let product = await productModel.findOne({
+      _id: productId,
+      isDeleted: false,
+    });
+    if (!product) {
+      return res.status(404).send({
+        status: false,
+        msg: "Product not found",
+      });
+    }
+
+    let cart = await cartModel.findOne({
+      userId: userId,
+    });
+    if (!cart) {
+      return res.status(404).send({
+        status: false,
+        msg: "Cart not found",
+      });
+    }
+
+    let cartProductUse = cart.items.filter(
+      (x) => x.productId.toString() === productId
+    );
+
+    if (removeProduct === 0) {
+      let cartDetails = await cartModel
+        .findOneAndUpdate(
+          { _id: cartId, "items.productId": productId },
+          {
+            $pull: { items: { productId: productId } },
+            $inc: {
+              totalPrice: -product.price * cartProductUse[0].quantity,
+              totalItems: -1,
+            },
+          },
+          { new: true }
+        )
+        .populate([{ path: "items.productId" }]);
+      return res.status(200).send({
+        status: true,
+        msg: "Cart updated with 0",
+        data: cartDetails,
+      });
+    }
+
+    if (removeProduct === 1) {
+      if (cartProductUse.length == 0) {
+        return res.status(200).send({
+          status: true,
+          msg: "This Product is deleted from your cart... Please continue with your favourite products.",
+          data: cart,
+        });
+      }
+      if (cartProductUse[0].quantity === 1) {
+        let cartDetails = await cartModel
+          .findOneAndUpdate(
+            { _id: cartId, "items.productId": productId },
+            {
+              $pull: { items: { productId: productId } },
+              $inc: {
+                totalPrice: -product.price * cartProductUse[0].quantity,
+                totalItems: -1,
+              },
+            },
+            { new: true }
+          )
+          .populate([{ path: "items.productId" }]);
+        return res.status(200).send({
+          status: true,
+          msg: "Product is removed from cart",
+          data: cartDetails,
+        });
+      }
+      if (cartProductUse[0].quantity > 1) {
+        let cartDetails = await cartModel
+          .findOneAndUpdate(
+            { _id: cartId, "items.productId": productId },
+            {
+              $inc: {
+                "items.$.quantity": -1,
+                totalPrice: -product.price,
+              },
+            },
+            { new: true }
+          )
+          .populate([{ path: "items.productId" }]);
+        return res.status(200).send({
+          status: true,
+          msg: "Cart updated",
+          data: cartDetails,
+        });
+      }
+    }
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
   }
 };
 
@@ -143,7 +275,7 @@ const getCart = async function (req, res) {
 
     const user = await userModel.findById(userId);
     if (!user) {
-      return res.status(400).send({ status: true, message: "User not found" });
+      return res.status(404).send({ status: true, message: "User not found" });
     }
 
     // authorization
@@ -154,7 +286,7 @@ const getCart = async function (req, res) {
 
     const cart = await cartModel.findOne({ userId: userId });
     if (!cart) {
-      return res.status(400).send({ status: true, message: "Cart not found" });
+      return res.status(404).send({ status: true, message: "Cart not found" });
     }
     return res
       .status(500)
@@ -176,7 +308,7 @@ const deleteCart = async function (req, res) {
 
     const user = await userModel.findById(userId);
     if (!user) {
-      return res.status(400).send({ status: true, message: "User not found" });
+      return res.status(404).send({ status: true, message: "User not found" });
     }
 
     // authorization
@@ -195,7 +327,7 @@ const deleteCart = async function (req, res) {
       return res.status(404).send({ status: false, msg: "Cart not found" }); // status code
     }
 
-    return res.status(200).send({
+    return res.status(204).send({
       status: true,
       message: "Cart successfully deleted",
       data: deleteCart,
@@ -205,4 +337,4 @@ const deleteCart = async function (req, res) {
   }
 };
 
-module.exports = { createCart, getCart, deleteCart };
+module.exports = { createCart, updateCart, getCart, deleteCart };

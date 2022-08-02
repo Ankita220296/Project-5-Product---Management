@@ -61,7 +61,11 @@ router.post(
   cartController.createCart
 );
 
-router.put("/users/:userId/cart", auth.Authentication);
+router.put(
+  "/users/:userId/cart",
+  auth.Authentication,
+  cartController.updateCart
+);
 
 router.get("/users/:userId/cart", auth.Authentication, cartController.getCart);
 
