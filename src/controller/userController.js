@@ -111,12 +111,7 @@ const updateUser = async function (req, res) {
     let userId = req.params.userId;
     let profileImage = req.body.files;
     let data = req.body;
-    if (!ObjectId.isValid(userId)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "UserId is not valid" });
-    }
-
+    
     const { fname, lname, email, phone, address, password } = data;
     let obj = {};
 

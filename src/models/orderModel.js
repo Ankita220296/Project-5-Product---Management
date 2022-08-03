@@ -6,33 +6,33 @@ const orderSchema = new mongoose.Schema(
     userId: {
       type: ObjectId,
       ref: "User",
-      //required: true,
+      required: true,
     },
     items: [
       {
         productId: {
           type: ObjectId,
           ref: "Products",
-          //required: true,
+          required: true,
         },
         quantity: {
           type: Number,
-          //required: true,
+          required: true,
           min: 1,
         },
       },
     ],
     totalPrice: {
       type: Number,
-      //required: true,
+      required: true,
     },
     totalItems: {
       type: Number,
-      // required: true,
+      required: true,
     },
     totalQuantity: {
       type: Number,
-      //required: true,
+      required: true,
     },
     cancellable: {
       type: Boolean,

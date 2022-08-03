@@ -1,4 +1,8 @@
 const userModel = require("../models/userModel");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
+const aws = require("aws-sdk");
+const uploadFile = require("../middleware/aws");
 
 // Validataion for empty request body
 const checkBodyParams = function (value) {
@@ -260,7 +264,17 @@ const validationForLoginUser = async function (req, res, next) {
 const validationForUpdateUser = async function (req, res, next) {
   try {
     let userId = req.params.userId;
+
+    if (!ObjectId.isValid(userId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "UserId is not valid" });
+    }
+
     const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).send({ status: false, msg: "User not found" });
+    }
 
     // authorization
     if (req.headers.userId !== user._id.toString()) {
@@ -273,6 +287,19 @@ const validationForUpdateUser = async function (req, res, next) {
     const { fname, lname, email, phone, password, address } = data;
     let profileImage = req.files;
 
+    console.log(profileImage)
+    if (profileImage.length > 1) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please upload only one image" });
+    }
+    if (!isValidImage(profileImage[0].originalname)) {
+      return res.status(400).send({
+        status: false,
+        message:
+          "Please upload only image file with extension jpg, png, gif, jpeg",
+      });
+    }
     if (!checkBodyParams(data) && !profileImage) {
       return res
         .status(400)

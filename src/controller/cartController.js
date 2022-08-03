@@ -150,12 +150,10 @@ const updateCart = async function (req, res) {
     const { productId, cartId, removeProduct } = data;
 
     if (![0, 1].includes(removeProduct)) {
-      return res
-        .status(400)
-        .send({
-          status: false,
-          message: "Remove Product key only accept 0 or 1",
-        });
+      return res.status(400).send({
+        status: false,
+        message: "Remove Product key is mandatory or only accept 0 or 1",
+      });
     }
 
     if (!ObjectId.isValid(productId)) {
@@ -176,6 +174,7 @@ const updateCart = async function (req, res) {
         message: "User does not exist",
       });
     }
+
     // authorization
     if (req.headers.userId !== user._id.toString())
       return res

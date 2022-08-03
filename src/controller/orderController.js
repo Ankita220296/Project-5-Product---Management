@@ -8,7 +8,7 @@ const ObjectId = mongoose.Types.ObjectId;
 const createOrder = async function (req, res) {
   try {
     let userId = req.params.userId;
-    let data = req.body;
+    let cartId = req.body.cartId;
 
     if (!ObjectId.isValid(userId)) {
       return res
@@ -16,12 +16,18 @@ const createOrder = async function (req, res) {
         .send({ status: false, message: "UserId is not valid" });
     }
 
+    if (!ObjectId.isValid(cartId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "CartId is not valid" });
+    }
+
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).send({ status: true, message: "User not found" });
     }
 
-    const cart = await cartModel.findOne({ _id: data.cartId });
+    const cart = await cartModel.findById(cartId).select({ _id: 0 });
 
     let totalQuantity = cart.items.map((x) => x.quantity);
     const sumOfQuantity = totalQuantity.reduce(
@@ -30,15 +36,11 @@ const createOrder = async function (req, res) {
     );
 
     const obj = {
-      cart,
+      ...cart.toJSON(),
       totalQuantity: sumOfQuantity,
     };
-    console.log(obj);
-    console.log(obj.cart);
 
-
-    const order = await orderModel.create(obj)
-    console.log(order)
+    const order = await orderModel.create(obj);
     return res
       .status(201)
       .send({ status: true, message: "Success", data: order });
@@ -50,4 +52,63 @@ const createOrder = async function (req, res) {
   }
 };
 
-module.exports = { createOrder };
+// .................................. Update Order .............................//
+const updateOrder = async function (req, res) {
+  try {
+    let userId = req.params.userId;
+    let orderId = req.body.orderId;
+
+    if (!ObjectId.isValid(userId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "UserId is not valid" });
+    }
+
+    if (!ObjectId.isValid(orderId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "OrderId is not valid" });
+    }
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).send({ status: true, message: "User not found" });
+    }
+
+    const order = await orderModel.findOne({ _id:orderId, userId:userId });
+    if (!order) {
+      return res.status(404).send({ status: true, message: "Order not found" });
+    }
+
+    if (order.cancellable === false) {
+      return res
+        .status(404)
+        .send({ status: true, message: "Order can't be cancelled" });
+    }
+
+    if (order.cancellable) {
+      const orderStatus = await orderModel.findOneAndUpdate(
+        {
+          _id: orderId,
+          userId: userId,
+        },
+        {
+          $set: { status: "cancelled" },
+        },
+        {
+          new: true,
+        }
+      );
+      return res
+        .status(200)
+        .send({ status: true, message: "Success", data: orderStatus });
+    }
+  } catch (error) {
+    return res.status(500).send({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { createOrder, updateOrder };

@@ -82,6 +82,12 @@ router.post(
   orderController.createOrder
 );
 
+router.put(
+  "/users/:userId/orders",
+  auth.Authentication,
+  orderController.updateOrder
+);
+
 router.all("/**", function (req, res) {
   res.status(404).send({
     status: false,
