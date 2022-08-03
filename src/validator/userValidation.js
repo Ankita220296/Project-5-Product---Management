@@ -53,7 +53,7 @@ const validationForUser = async function (req, res, next) {
     const { fname, lname, email, phone, password, address } = data;
     let profileImage = req.files;
 
-    if (profileImage.length == 0) {
+    if (profileImage.length === 0) {
       return res
         .status(400)
         .send({ status: false, message: "Please Upload the Profile Image" });

@@ -98,7 +98,7 @@ const getUser = async function (req, res) {
         .send({ status: false, msg: "You are not authorized...." });
 
     return res
-      .status(500)
+      .status(200)
       .send({ status: true, message: "User profile details", data: user });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });

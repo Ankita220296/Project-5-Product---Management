@@ -3,6 +3,7 @@ const router = express.Router();
 const userController = require("../controller/userController");
 const productController = require("../controller/productController");
 const cartController = require("../controller/cartController");
+const orderController = require("../controller/orderController");
 const validation = require("../validator/userValidation");
 const productValidation = require("../validator/productValidator");
 const auth = require("../middleware/auth");
@@ -73,6 +74,12 @@ router.delete(
   "/users/:userId/cart",
   auth.Authentication,
   cartController.deleteCart
+);
+
+router.post(
+  "/users/:userId/orders",
+  auth.Authentication,
+  orderController.createOrder
 );
 
 router.all("/**", function (req, res) {

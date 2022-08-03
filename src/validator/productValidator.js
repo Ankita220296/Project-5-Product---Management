@@ -13,14 +13,14 @@ const lengthOfCharacter = function (value) {
 };
 
 const descriptionLength = function (value) {
-  if (!/^\s*(?=[a-zA-Z])[\w\.\s]{3,1000}\s*$/.test(value)) return false;
+  if (!/^\s*(?=[a-zA-Z])[\w\.\,\s]{3,1000}\s*$/.test(value)) return false;
   else return true;
 };
 
 const isAvailableCurrency = function (x) {
   if (x) {
     x = x.trim();
-  } //trimming of the title before test
+  }
   if (x !== "INR") {
     return false;
   }
@@ -30,7 +30,7 @@ const isAvailableCurrency = function (x) {
 const isCurrencyFormat = function (x) {
   if (x) {
     x = x.trim();
-  } //trimming of the title before test
+  }
   if (x !== "₹") {
     return false;
   }
@@ -120,6 +120,7 @@ const validationForProduct = async function (req, res, next) {
       });
     }
     if (!descriptionLength(description)) {
+      // check regex for invalid
       return res.status(400).send({
         status: false,
         message: "Please provide description with right format",
@@ -139,31 +140,35 @@ const validationForProduct = async function (req, res, next) {
       });
     }
 
-    if (!isValidBody(currencyId)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please enter currencyId" });
+    // if (!isValidBody(currencyId)) {
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: "Please enter currencyId" });
+    // }
+    if (currencyId) {
+      if (!isAvailableCurrency(currencyId)) {
+        //change for test case
+        return res.status(400).send({
+          status: false,
+          message: "currencyId can only be in 'INR' ",
+        });
+      }
     }
 
-    if (!isAvailableCurrency(currencyId)) {
-      return res.status(400).send({
-        status: false,
-        message: "currencyId can only be in 'INR' ",
-      });
-    }
+    // if (!isValidBody(currencyFormat)) {
+    //   return res.status(400).send({
+    //     status: false,
+    //     message: "Please enter currency format, eg: '₹' ",
+    //   });
+    // }
 
-    if (!isValidBody(currencyFormat)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please enter currency format, eg: '₹' ",
-      });
-    }
-
-    if (!isCurrencyFormat(currencyFormat)) {
-      return res.status(400).send({
-        status: false,
-        message: "currency format can only be in '₹' ",
-      });
+    if (currencyFormat) {
+      if (!isCurrencyFormat(currencyFormat)) {
+        return res.status(400).send({
+          status: false,
+          message: "currency format can only be in '₹' ",
+        });
+      }
     }
 
     if (typeof isFreeShipping === "string") {
@@ -174,7 +179,7 @@ const validationForProduct = async function (req, res, next) {
         });
       }
     }
-   
+
     if (!isValidBody(style)) {
       return res.status(400).send({
         status: false,
