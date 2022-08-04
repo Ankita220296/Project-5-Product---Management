@@ -28,11 +28,24 @@ const createOrder = async function (req, res) {
       return res.status(404).send({ status: true, message: "User not found" });
     }
 
-    const cart = await cartModel.findById(cartId).select({ _id: 0 });
+    // authorization
+    if (req.headers.userId !== user._id.toString())
+      return res
+        .status(403)
+        .send({ status: false, msg: "You are not authorized...." });
 
-    let totalQuantity = cart.items.map((x) => x.quantity); 
+    const cart = await cartModel.findById(cartId).select({ _id: 0 });
+    if (cart.totalItems === 0) {
+      return res.status(201).send({
+        status: false,
+        message: "Please add some items in cart to create an order",
+      });
+    }
+
+    let totalQuantity = cart.items.map((x) => x.quantity);
     const sumOfQuantity = totalQuantity.reduce(
-      (previousValue, currentValue) => previousValue + currentValue
+      (previousValue, currentValue) => previousValue + currentValue,
+      0
     );
 
     const obj = {
@@ -81,15 +94,26 @@ const updateOrder = async function (req, res) {
         .send({ status: false, message: "UserId is not valid" });
     }
 
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).send({ status: true, message: "User not found" });
+    }
+
+    // authorization
+    if (req.headers.userId !== user._id.toString())
+      return res
+        .status(403)
+        .send({ status: false, msg: "You are not authorized...." });
+
     if (!ObjectId.isValid(orderId)) {
       return res
         .status(400)
         .send({ status: false, message: "OrderId is not valid" });
     }
 
-    const user = await userModel.findById(userId);
-    if (!user) {
-      return res.status(404).send({ status: true, message: "User not found" });
+    const cart = await cartModel.findOne({ userId: userId });
+    if (cart.totalItems === 0) {
+      return res.status(404).send({ status: true, message: "Cart not found" });
     }
 
     const order = await orderModel.findOne({ _id: orderId, userId: userId });

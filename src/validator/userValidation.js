@@ -54,7 +54,7 @@ function isValidImage(value) {
 const validationForUser = async function (req, res, next) {
   try {
     let data = req.body;
-    const { fname, lname, email, phone, password, address } = data;
+    let { fname, lname, email, phone, password, address } = data;
     let profileImage = req.files;
 
     if (profileImage.length === 0) {
@@ -104,7 +104,7 @@ const validationForUser = async function (req, res, next) {
       });
     }
 
-    email = email.toLowerCase();
+    if (email) email = email.toLowerCase();
     if (!isValidBody(email)) {
       return res
         .status(400)
@@ -228,18 +228,20 @@ const validationForLoginUser = async function (req, res, next) {
         .status(400)
         .send({ status: false, message: "Please input Parameters" });
     }
-    data.email = data.email.toLowerCase();
+
     if (!data.email) {
       return res.status(400).send({
         status: false,
         message: "Email is mandatory",
       });
     }
+
     if (!isValidEmail(data.email)) {
       return res
         .status(400)
         .send({ status: false, message: "Email is not valid" });
     }
+    if (data.email) data.email = data.email.toLowerCase();
     if (!data.password) {
       return res.status(400).send({
         status: false,
@@ -286,21 +288,25 @@ const validationForUpdateUser = async function (req, res, next) {
     }
 
     let data = req.body;
-    const { fname, lname, email, phone, password, address } = data;
+    let { fname, lname, email, phone, password, address } = data;
     let profileImage = req.files;
 
-    if (profileImage.length > 1) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please upload only one image" });
+    //console.log(profileImage);
+    if (profileImage && profileImage.length > 0) {
+      if (profileImage.length > 1) {
+        return res
+          .status(400)
+          .send({ status: false, message: "Please upload only one image" });
+      }
+      if (!isValidImage(profileImage[0].originalname)) {
+        return res.status(400).send({
+          status: false,
+          message:
+            "Please upload only image file with extension jpg, png, gif, jpeg",
+        });
+      }
     }
-    if (!isValidImage(profileImage[0].originalname)) {
-      return res.status(400).send({
-        status: false,
-        message:
-          "Please upload only image file with extension jpg, png, gif, jpeg",
-      });
-    }
+
     if (!checkBodyParams(data) && !profileImage) {
       return res
         .status(400)

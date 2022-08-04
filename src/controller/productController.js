@@ -31,7 +31,7 @@ const createProduct = async function (req, res) {
     const productCreation = await productModel.create(data);
     return res.status(201).send({
       status: true,
-      message: "Product Successfully created",
+      message: "Success",
       data: productCreation,
     });
   } catch (error) {
@@ -45,8 +45,21 @@ const createProduct = async function (req, res) {
 // .................................. Get Product by Query Params .............................//
 const getProductbyQueryParams = async function (req, res) {
   try {
-    let { size, name, priceGreaterThan, priceLessThan, priceSort } = req.query;
+    const data = req.query;
+    let { size, name, priceGreaterThan, priceLessThan, priceSort } = data;
     const obj = { isDeleted: false };
+
+    let checkQueryParams = Object.keys(data);
+    let arr = ["priceLessThan", "priceGreaterThan", "name", "size"];
+    for (let i = 0; i < checkQueryParams.length; i++) {
+      let update = arr.includes(checkQueryParams[i]);
+      if (!update)
+        return res.status(400).send({
+          status: false,
+          message:
+            "you can only update priceLessThan, priceGreaterThan, name and size fields.",
+        });
+    }
 
     const availableSizes = size;
     if (availableSizes) {
@@ -56,18 +69,18 @@ const getProductbyQueryParams = async function (req, res) {
     if (size != undefined) {
       if (!isValidBody(size)) {
         return res
-          .status(200)
-          .send({ status: true, message: "Please enter proper size" });
+          .status(400)
+          .send({ status: false, message: "Please enter proper size" });
       }
     }
 
     let title = name;
-    if (title) obj.title = { $regex: name };
+    if (title) obj.title = { $regex: name, $options: "i" };
     if (name != undefined) {
       if (!isValidBody(name)) {
         return res
-          .status(200)
-          .send({ status: true, message: "Please enter proper name" });
+          .status(400)
+          .send({ status: false, message: "Please enter proper name" });
       }
     }
 
@@ -81,16 +94,38 @@ const getProductbyQueryParams = async function (req, res) {
 
     if (priceGreaterThan != undefined) {
       if (!isValidBody(priceGreaterThan)) {
-        return res
-          .status(200)
-          .send({ status: true, message: "Please enter proper maximum price" });
+        return res.status(400).send({
+          status: false,
+          message: "Please enter proper maximum price",
+        });
+      }
+      if (isNaN(priceGreaterThan)) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter proper maximum price",
+        });
+      }
+    }
+
+    if (priceLessThan != undefined) {
+      if (!isValidBody(priceLessThan)) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter proper minimum price",
+        });
+      }
+      if (isNaN(priceLessThan)) {
+        return res.status(400).send({
+          status: false,
+          message: "Please enter proper minimum price",
+        });
       }
     }
 
     if (priceSort != undefined) {
       if (!["1", "-1"].includes(priceSort)) {
-        return res.status(200).send({
-          status: true,
+        return res.status(400).send({
+          status: false,
           message:
             "Please enter price sort value for ascending order gives 1 or for descending order gives -1",
         });
@@ -103,11 +138,11 @@ const getProductbyQueryParams = async function (req, res) {
       if (priceDetails.length === 0) {
         return res
           .status(400)
-          .send({ status: true, message: "Product not found" });
+          .send({ status: false, message: "Product not found" });
       }
       return res.status(200).send({
         status: true,
-        message: "Product list",
+        message: "Success",
         data: priceDetails,
       });
     }
@@ -117,21 +152,13 @@ const getProductbyQueryParams = async function (req, res) {
       if (priceDetails.length === 0) {
         return res
           .status(400)
-          .send({ status: true, message: "Product not found" });
+          .send({ status: false, message: "Product not found" });
       }
       return res.status(200).send({
         status: true,
-        message: "Product list",
+        message: "Success",
         data: priceDetails,
       });
-    }
-
-    if (priceLessThan != undefined) {
-      if (!isValidBody(priceLessThan)) {
-        return res
-          .status(200)
-          .send({ status: true, message: "Please enter proper minimum price" });
-      }
     }
 
     let productDetails = await productModel.find(obj);
@@ -140,10 +167,11 @@ const getProductbyQueryParams = async function (req, res) {
         .status(400)
         .send({ status: true, message: "Product not found" });
     }
+    console.log(obj);
 
     return res
       .status(200)
-      .send({ status: true, message: "Product List", data: productDetails });
+      .send({ status: true, message: "Success", data: productDetails });
   } catch (error) {
     res.status(500).send({ status: false, message: error.message });
   }
@@ -166,12 +194,14 @@ const getProductbyParams = async function (req, res) {
       { deletedAt: 0, __v: 0 }
     );
     if (!findProducts) {
-      return res.status(404).send({ status: false, msg: "Product not found" });
+      return res
+        .status(404)
+        .send({ status: false, message: "Product not found" });
     }
 
     return res
       .status(200)
-      .send({ status: true, message: "Product List", data: findProducts });
+      .send({ status: true, message: "Success", data: findProducts });
   } catch (error) {
     res.status(500).send({ status: false, message: error.message });
   }

@@ -6,13 +6,13 @@ const uploadFile = require("../middleware/aws");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
-
 // validation for Profile image
 function isValidImage(value) {
   const regEx = /.+\.(?:(jpg|gif|png|jpeg|jfif))/; //It will handle all undefined, null, only numbersNaming, dot, space allowed in between
   const result = regEx.test(value);
   return result;
 }
+
 // .................................. Create User .............................//
 const registerUser = async function (req, res) {
   try {
@@ -74,7 +74,6 @@ const loginUser = async function (req, res) {
   }
 };
 
-
 // .................................. Get User .............................//
 const getUser = async function (req, res) {
   try {
@@ -109,9 +108,9 @@ const getUser = async function (req, res) {
 const updateUser = async function (req, res) {
   try {
     let userId = req.params.userId;
-    let profileImage = req.body.files;
+    let profileImage = req.files;
     let data = req.body;
-    
+
     const { fname, lname, email, phone, address, password } = data;
     let obj = {};
 
@@ -201,7 +200,7 @@ const updateUser = async function (req, res) {
     return res.status(200).send({
       status: true,
       message: "User profile updated",
-      data: updateUserDetails
+      data: updateUserDetails,
     });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
