@@ -104,6 +104,7 @@ const validationForUser = async function (req, res, next) {
       });
     }
 
+    email = email.toLowerCase();
     if (!isValidBody(email)) {
       return res
         .status(400)
@@ -227,6 +228,7 @@ const validationForLoginUser = async function (req, res, next) {
         .status(400)
         .send({ status: false, message: "Please input Parameters" });
     }
+    data.email = data.email.toLowerCase();
     if (!data.email) {
       return res.status(400).send({
         status: false,
@@ -287,7 +289,6 @@ const validationForUpdateUser = async function (req, res, next) {
     const { fname, lname, email, phone, password, address } = data;
     let profileImage = req.files;
 
-    console.log(profileImage)
     if (profileImage.length > 1) {
       return res
         .status(400)

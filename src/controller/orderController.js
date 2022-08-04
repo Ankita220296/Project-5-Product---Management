@@ -9,6 +9,7 @@ const createOrder = async function (req, res) {
   try {
     let userId = req.params.userId;
     let cartId = req.body.cartId;
+    let cancellable = req.body.cancellable;
 
     if (!ObjectId.isValid(userId)) {
       return res
@@ -29,15 +30,15 @@ const createOrder = async function (req, res) {
 
     const cart = await cartModel.findById(cartId).select({ _id: 0 });
 
-    let totalQuantity = cart.items.map((x) => x.quantity);
+    let totalQuantity = cart.items.map((x) => x.quantity); 
     const sumOfQuantity = totalQuantity.reduce(
-      (previousValue, currentValue) => previousValue + currentValue,
-      0
+      (previousValue, currentValue) => previousValue + currentValue
     );
 
     const obj = {
       ...cart.toJSON(),
       totalQuantity: sumOfQuantity,
+      cancellable: cancellable,
     };
 
     const order = await orderModel.create(obj);
@@ -57,6 +58,22 @@ const updateOrder = async function (req, res) {
   try {
     let userId = req.params.userId;
     let orderId = req.body.orderId;
+    let status = req.body.status;
+
+    if (!status) {
+      return res.status(400).send({
+        status: false,
+        message: "Status is mandatory'",
+      });
+    }
+
+    let statusList = ["pending", "completed", "cancelled"];
+    if (!statusList.includes(status)) {
+      return res.status(400).send({
+        status: false,
+        message: "Status should be from 'pending','completed' and 'cancelled'",
+      });
+    }
 
     if (!ObjectId.isValid(userId)) {
       return res
@@ -75,7 +92,7 @@ const updateOrder = async function (req, res) {
       return res.status(404).send({ status: true, message: "User not found" });
     }
 
-    const order = await orderModel.findOne({ _id:orderId, userId:userId });
+    const order = await orderModel.findOne({ _id: orderId, userId: userId });
     if (!order) {
       return res.status(404).send({ status: true, message: "Order not found" });
     }
@@ -93,7 +110,7 @@ const updateOrder = async function (req, res) {
           userId: userId,
         },
         {
-          $set: { status: "cancelled" },
+          $set: { status: status },
         },
         {
           new: true,
