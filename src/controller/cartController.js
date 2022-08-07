@@ -1,6 +1,7 @@
 const cartModel = require("../models/cartModel");
 const productModel = require("../models/productModel");
 const userModel = require("../models/userModel");
+const orderModel = require("../models/orderModel");
 const { checkBodyParams } = require("../validator/userValidation");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
@@ -157,21 +158,23 @@ const updateCart = async function (req, res) {
     }
 
     if (!ObjectId.isValid(productId)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please enter productId or ProductId is not valid" });
+      return res.status(400).send({
+        status: false,
+        message: "Please enter productId or ProductId is not valid",
+      });
     }
 
     if (!ObjectId.isValid(cartId)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please enter cartId or CartId is not valid" });
+      return res.status(400).send({
+        status: false,
+        message: "Please enter cartId or CartId is not valid",
+      });
     }
     let user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).send({
         status: true,
-        message: "User does not exist",
+        message: "User not found",
       });
     }
 
@@ -311,6 +314,19 @@ const getCart = async function (req, res) {
         .status(403)
         .send({ status: false, msg: "You are not authorized...." });
 
+    const order = await orderModel.findOneAndUpdate(
+      { userId: userId },
+      { items: [], totalItems: 0, totalPrice: 0 , totalQuantity : 0 },
+      { new: true }
+    );
+    if (order) {
+      return res.status(200).send({
+        status: true,
+        message: "Success",
+        data: order,
+      });
+    }
+
     const cart = await cartModel
       .findOne({ userId: userId })
       .populate([{ path: "items.productId" }]);
@@ -332,7 +348,7 @@ const deleteCart = async function (req, res) {
     if (!ObjectId.isValid(userId)) {
       return res
         .status(400)
-        .send({ status: false, message: "Userid is not valid" });
+        .send({ status: false, message: "UserId is not valid" });
     }
 
     const user = await userModel.findById(userId);
@@ -353,7 +369,7 @@ const deleteCart = async function (req, res) {
     );
 
     if (!deleteCart) {
-      return res.status(404).send({ status: false, msg: "Cart not found" }); // status code
+      return res.status(404).send({ status: false, msg: "Cart not found" });
     }
 
     return res.status(204).send({

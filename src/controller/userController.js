@@ -87,7 +87,7 @@ const getUser = async function (req, res) {
 
     const user = await userModel.findById(userId);
     if (!user) {
-      return res.status(400).send({ status: true, message: "User not found" });
+      return res.status(404).send({ status: false, message: "User not found" });
     }
 
     // authorization
@@ -194,9 +194,8 @@ const updateUser = async function (req, res) {
     );
 
     if (!updateUserDetails) {
-      return res.status(403).send({ status: false, msg: "User not found" });
+      return res.status(404).send({ status: false, msg: "User not found" });
     }
-
     return res.status(200).send({
       status: true,
       message: "User profile updated",

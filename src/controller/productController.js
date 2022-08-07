@@ -50,7 +50,7 @@ const getProductbyQueryParams = async function (req, res) {
     const obj = { isDeleted: false };
 
     let checkQueryParams = Object.keys(data);
-    let arr = ["priceLessThan", "priceGreaterThan", "name", "size"];
+    let arr = ["priceLessThan", "priceGreaterThan", "name", "size","priceSort"];
     for (let i = 0; i < checkQueryParams.length; i++) {
       let update = arr.includes(checkQueryParams[i]);
       if (!update)
@@ -85,11 +85,11 @@ const getProductbyQueryParams = async function (req, res) {
     }
 
     if (priceGreaterThan && priceLessThan) {
-      obj.price = { $gte: priceGreaterThan, $lte: priceLessThan };
+      obj.price = { $gt: priceGreaterThan, $lt: priceLessThan };
     } else if (priceGreaterThan) {
-      obj.price = { $gte: priceGreaterThan };
+      obj.price = { $gt: priceGreaterThan };
     } else if (priceLessThan) {
-      obj.price = { $lte: priceLessThan };
+      obj.price = { $lt: priceLessThan };
     }
 
     if (priceGreaterThan != undefined) {
@@ -107,7 +107,7 @@ const getProductbyQueryParams = async function (req, res) {
       }
     }
 
-    if (priceLessThan != undefined) {
+    if (priceLessThan != undefined) {    
       if (!isValidBody(priceLessThan)) {
         return res.status(400).send({
           status: false,
@@ -137,7 +137,7 @@ const getProductbyQueryParams = async function (req, res) {
       let priceDetails = await productModel.find(obj).sort({ price: price });
       if (priceDetails.length === 0) {
         return res
-          .status(400)
+          .status(404)
           .send({ status: false, message: "Product not found" });
       }
       return res.status(200).send({
@@ -151,7 +151,7 @@ const getProductbyQueryParams = async function (req, res) {
       let priceDetails = await productModel.find(obj).sort({ price: 1 });
       if (priceDetails.length === 0) {
         return res
-          .status(400)
+          .status(404)
           .send({ status: false, message: "Product not found" });
       }
       return res.status(200).send({
@@ -164,10 +164,9 @@ const getProductbyQueryParams = async function (req, res) {
     let productDetails = await productModel.find(obj);
     if (productDetails.length === 0) {
       return res
-        .status(400)
+        .status(404)
         .send({ status: true, message: "Product not found" });
     }
-    console.log(obj);
 
     return res
       .status(200)
@@ -273,7 +272,7 @@ const updateProduct = async function (req, res) {
     );
 
     if (!updateProductDetails) {
-      return res.status(404).send({ status: false, msg: "Product not found" }); // status code
+      return res.status(404).send({ status: false, msg: "Product not found" }); 
     }
 
     return res.status(200).send({
@@ -303,7 +302,7 @@ const deleteProduct = async function (req, res) {
     );
 
     if (!deleteProductDetails) {
-      return res.status(404).send({ status: false, msg: "Product not found" }); // status code
+      return res.status(404).send({ status: false, msg: "Product not found" }); 
     }
 
     return res.status(200).send({

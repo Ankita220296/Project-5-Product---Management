@@ -150,6 +150,13 @@ const validationForUser = async function (req, res, next) {
     if (!address) {
       return res.status(400).send({
         status: false,
+        message: "Address is Mandatory",
+      });
+    }
+
+    if (!address.shipping) {
+      return res.status(400).send({
+        status: false,
         message: "Please enter shipping address",
       });
     }
@@ -169,13 +176,13 @@ const validationForUser = async function (req, res, next) {
     if (!lengthOfCharacter(address.shipping.city)) {
       return res.status(400).send({
         status: false,
-        message: "Please enter valid city",
+        message: "Please enter valid city in shipping address",
       });
     }
     if (!/^\d{6}$/.test(address.shipping.pincode)) {
       return res.status(400).send({
         status: false,
-        message: "Please enter valid pincode",
+        message: "Please enter valid pincode in shipping address",
       });
     }
 
@@ -185,6 +192,7 @@ const validationForUser = async function (req, res, next) {
         message: "Please enter billing address",
       });
     }
+
     if (!isValidBody(address.billing.street)) {
       return res.status(400).send({
         status: false,
@@ -200,13 +208,13 @@ const validationForUser = async function (req, res, next) {
     if (!lengthOfCharacter(address.billing.city)) {
       return res.status(400).send({
         status: false,
-        message: "Please enter valid city",
+        message: "Please enter valid city in billing address",
       });
     }
     if (!/^\d{6}$/.test(address.billing.pincode)) {
       return res.status(400).send({
         status: false,
-        message: "Please enter valid pincode",
+        message: "Please enter valid pincode in billing address",
       });
     }
   } catch (error) {
@@ -291,7 +299,6 @@ const validationForUpdateUser = async function (req, res, next) {
     let { fname, lname, email, phone, password, address } = data;
     let profileImage = req.files;
 
-    //console.log(profileImage);
     if (profileImage && profileImage.length > 0) {
       if (profileImage.length > 1) {
         return res

@@ -74,7 +74,7 @@ const validationForProduct = async function (req, res, next) {
     if (productImage.length == 0) {
       return res
         .status(400)
-        .send({ status: false, message: "Please Upload the Product Image" });
+        .send({ status: false, message: "Please Upload the productImage" });
     } else if (productImage.length > 1) {
       return res
         .status(400)
@@ -140,27 +140,14 @@ const validationForProduct = async function (req, res, next) {
       });
     }
 
-    // if (!isValidBody(currencyId)) {
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, message: "Please enter currencyId" });
-    // }
     if (currencyId) {
       if (!isAvailableCurrency(currencyId)) {
-        //change for test case
         return res.status(400).send({
           status: false,
           message: "currencyId can only be in 'INR' ",
         });
       }
     }
-
-    // if (!isValidBody(currencyFormat)) {
-    //   return res.status(400).send({
-    //     status: false,
-    //     message: "Please enter currency format, eg: '₹' ",
-    //   });
-    // }
 
     if (currencyFormat) {
       if (!isCurrencyFormat(currencyFormat)) {

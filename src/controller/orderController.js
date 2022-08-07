@@ -48,6 +48,14 @@ const createOrder = async function (req, res) {
       0
     );
 
+    if (cancellable) {
+      if (typeof cancellable !== "boolean") {
+        return res
+          .status(400)
+          .send({ status: true, message: "Cancellable only be true or false" });
+      }
+    }
+
     const obj = {
       ...cart.toJSON(),
       totalQuantity: sumOfQuantity,
@@ -123,7 +131,7 @@ const updateOrder = async function (req, res) {
 
     if (order.cancellable === false) {
       return res
-        .status(404)
+        .status(400)
         .send({ status: true, message: "Order can't be cancelled" });
     }
 
