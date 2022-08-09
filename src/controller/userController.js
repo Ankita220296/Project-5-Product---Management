@@ -1,6 +1,5 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
-const aws = require("aws-sdk");
 const jwt = require("jsonwebtoken");
 const uploadFile = require("../middleware/aws");
 const mongoose = require("mongoose");
@@ -77,7 +76,6 @@ const loginUser = async function (req, res) {
 // .................................. Get User .............................//
 const getUser = async function (req, res) {
   try {
-    //console.log(req.headers);
     let userId = req.params.userId;
     if (!ObjectId.isValid(userId)) {
       return res
@@ -168,7 +166,6 @@ const updateUser = async function (req, res) {
         }
         if (address.shipping.city) {
           obj["address.shipping.city"] = address.shipping.city;
-          0;
         }
         if (address.shipping.pincode) {
           obj["address.shipping.pincode"] = address.shipping.pincode;

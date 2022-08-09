@@ -1,8 +1,7 @@
 const userModel = require("../models/userModel");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
-const aws = require("aws-sdk");
-const uploadFile = require("../middleware/aws");
+
 
 // Validataion for empty request body
 const checkBodyParams = function (value) {
@@ -50,6 +49,7 @@ function isValidImage(value) {
   const result = regEx.test(value);
   return result;
 }
+
 // ....................................... Validation for User .................................//
 const validationForUser = async function (req, res, next) {
   try {

@@ -120,7 +120,6 @@ const validationForProduct = async function (req, res, next) {
       });
     }
     if (!descriptionLength(description)) {
-      // check regex for invalid
       return res.status(400).send({
         status: false,
         message: "Please provide description with right format",

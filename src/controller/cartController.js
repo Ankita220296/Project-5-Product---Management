@@ -55,8 +55,8 @@ const createCart = async function (req, res) {
         msg: "Product not found",
       });
     }
+
     let findCart;
-    // if cart id is present in req body
     if (cartId) {
       findCart = await cartModel.findOne({
         _id: cartId,
@@ -77,7 +77,6 @@ const createCart = async function (req, res) {
     }
 
     if (findCart) {
-      // to check product is present in cart or not
       let isProductAlready = findCart.items.filter(
         (x) => x.productId.toString() === productId
       );
@@ -305,7 +304,7 @@ const getCart = async function (req, res) {
 
     const user = await userModel.findById(userId);
     if (!user) {
-      return res.status(404).send({ status: true, message: "User not found" });
+      return res.status(404).send({ status: false, message: "User not found" });
     }
 
     // authorization
@@ -316,7 +315,7 @@ const getCart = async function (req, res) {
 
     const order = await orderModel.findOneAndUpdate(
       { userId: userId },
-      { items: [], totalItems: 0, totalPrice: 0 , totalQuantity : 0 },
+      { items: [], totalItems: 0, totalPrice: 0, totalQuantity: 0 },
       { new: true }
     );
     if (order) {

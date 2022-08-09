@@ -1,6 +1,5 @@
 const userModel = require("../models/userModel");
 const productModel = require("../models/productModel");
-const aws = require("aws-sdk");
 const uploadFile = require("../middleware/aws");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
@@ -187,7 +186,6 @@ const getProductbyParams = async function (req, res) {
         .send({ status: false, message: "ProductId is not valid" });
     }
 
-    //try to find book from that id
     let findProducts = await productModel.findOne(
       { _id: productId, isDeleted: false },
       { deletedAt: 0, __v: 0 }
