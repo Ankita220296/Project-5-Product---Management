@@ -8,11 +8,7 @@ const validation = require("../validator/userValidation");
 const productValidation = require("../validator/productValidator");
 const auth = require("../middleware/auth");
 
-// test
-router.get("/test", function (req, res) {
-  res.send("My first api for checking the terminal");
-});
-
+// .................................. USER APIS .............................//
 router.post(
   "/register",
   validation.validationForUser,
@@ -38,6 +34,7 @@ router.put(
   userController.updateUser
 );
 
+// .................................. PRODUCT APIS .............................//
 router.post(
   "/products",
   productValidation.validationForProduct,
@@ -56,6 +53,7 @@ router.put(
 
 router.delete("/products/:productId", productController.deleteProduct);
 
+// .................................. CART APIS .............................//
 router.post(
   "/users/:userId/cart",
   auth.Authentication,
@@ -76,6 +74,7 @@ router.delete(
   cartController.deleteCart
 );
 
+// .................................. ORDER APIS .............................//
 router.post(
   "/users/:userId/orders",
   auth.Authentication,
